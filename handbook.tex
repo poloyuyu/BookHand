@@ -1,0 +1,947 @@
+\documentclass[10pt,a4paper,twocolumn]{article}
+
+% -- Codificacion y fuentes --
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% -- Margenes compactos --
+\usepackage[left=1cm, right=1cm, top=1.5cm, bottom=1.5cm]{geometry}
+
+% -- Codigo fuente --
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.5,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.5,0,0.35}
+\definecolor{backcolour}{rgb}{0.97,0.97,0.97}
+
+\lstset{
+	backgroundcolor=\color{backcolour},
+	commentstyle=\color{codegreen}\itshape,
+	keywordstyle=\color{blue}\bfseries,
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\scriptsize,
+	breakatwhitespace=false,
+	breaklines=true,
+	captionpos=b,
+	keepspaces=true,
+	numbers=left,
+	numbersep=4pt,
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	tabsize=2,
+	frame=single,
+	rulecolor=\color{black!30},
+	xleftmargin=1.5em,
+	framexleftmargin=1em,
+}
+
+\lstdefinestyle{cpp}{language=C++,
+	morekeywords={int64_t, uint64_t, __int128, __builtin_popcount, __gcd}
+}
+\lstdefinestyle{python}{language=Python}
+\lstdefinestyle{java}{language=Java}
+
+% -- Matematicas --
+\usepackage{amsmath, amssymb}
+
+% -- Tabla de contenidos clickeable --
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue!60!black,
+	urlcolor=blue!60!black,
+}
+
+% -- Headers con nombre del equipo --
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textbf{cin>>nombre;}}
+\fancyhead[C]{\textbf{ICPC Notebook}}
+\fancyhead[R]{P\'agina \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% -- Secciones compactas --
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{1.5ex}{0.5ex}
+\titlespacing*{\subsection}{0pt}{1ex}{0.3ex}
+\titlespacing*{\subsubsection}{0pt}{0.8ex}{0.2ex}
+
+\begin{document}
+	
+	\begin{center}
+		{\LARGE \textbf{Handbook cin>>nombre;}} \\[4pt]
+		{\large cin>>nombre; --- UTFSM} \\[2pt]
+		{\small \'Ultima actualizaci\'on: \today}
+	\end{center}
+	
+	\tableofcontents
+	\vspace{0.5cm}
+	
+	% -----------------------------------------------
+	\section{Template Base}
+	% -----------------------------------------------
+	
+	\begin{lstlisting}[style=cpp, title={template.cpp}]
+		#include <bits/stdc++.h>
+		using namespace std;
+		using ll = long long;
+		#define all(v) (v).begin(), (v).end()
+		
+		void solve(){
+			
+		}
+		int main(){
+			ios::sync_with_stdio(false);
+			cin.tie(nullptr);
+			ll t = 1;
+			cin >> t;
+			while(t--){
+				solve();
+			}
+			return 0;
+		}
+	\end{lstlisting}
+	
+	% -----------------------------------------------
+	\section{Grafos}
+	% -----------------------------------------------
+	
+	\subsection{BFS / DFS}
+	% Tu codigo aqui
+	
+	\subsection{Dijkstra -- $O((V+E) \log V)$}
+	
+	\begin{lstlisting}[style=cpp, title={dijkstra.cpp}]
+		/*
+		*Description:* Shortest path, O((V+E) log V),
+		no negative weights
+		*/
+		for (int i = 1; i <= n; i++) distance[i] = INF;
+		distance[x] = 0;
+		q.push({0,x});
+		while (!q.empty()) {
+			int a = q.top().second; q.pop();
+			if (processed[a]) continue;
+			processed[a] = true;
+			for (auto u : adj[a]) {
+				int b = u.first, w = u.second;
+				if (distance[a]+w < distance[b]) {
+					distance[b] = distance[a]+w;
+					q.push({-distance[b],b});
+				}
+			}
+		}
+	\end{lstlisting}
+	
+	\subsection{Floyd-Warshall -- $O(V^3)$}
+	
+	\begin{lstlisting}[style=cpp, title={Floyd-Warshall.cpp}]
+		/*
+		*Description:* All pairs shortest path, O(V^3)
+		*Status:* Tested
+		*/
+		for (int i = 1; i <= n; i++) {
+			for (int j = 1; j <= n; j++) {
+				if (i == j) distance[i][j] = 0;
+				else if (adj[i][j]) distance[i][j] = adj[i][j];
+				else distance[i][j] = INF;
+			}
+		}
+		for (int k = 1; k <= n; k++) {
+			for (int i = 1; i <= n; i++) {
+				for (int j = 1; j <= n; j++) {
+					distance[i][j] = min(distance[i][j],
+					distance[i][k]+distance[k][j]);
+				}
+			}
+		}
+	\end{lstlisting}
+	
+	\subsection{Bellman-Ford -- $O(VE)$}
+	
+	\begin{lstlisting}[style=cpp, title={Bellman-Ford.cpp}]
+		/*
+		*Description:* Shortest paths from s,
+		allows negative weights. O(VE)
+		*Status:* Tested on CSES
+		*/
+		struct BellmanFord {
+			struct Edge { int from, to; ll weight; };
+			int n, last_updated = -1;
+			const ll INF = 1e18;
+			vector<int> p; vector<ll> dist;
+			BellmanFord(vector<Edge> &G, int s, int _n) {
+				n = _n; dist.assign(n+1,INF);
+				p.assign(n+1,-1); dist[s] = 0;
+				for (int i = 1; i <= n; i++) {
+					last_updated = -1;
+					for (Edge &e : G)
+					if (dist[e.from]+e.weight < dist[e.to]) {
+						dist[e.to] = dist[e.from]+e.weight;
+						p[e.to] = e.from;
+						last_updated = e.to;
+					}
+				}
+			}
+			bool getCycle(vector<int> &cycle) {
+				if (last_updated == -1) return false;
+				for (int i = 0; i < n-1; i++)
+				last_updated = p[last_updated];
+				for (int x = last_updated ;; x=p[x]) {
+					cycle.push_back(x);
+					if (x == last_updated
+					and cycle.size() > 1) break;
+				}
+				reverse(cycle.begin(), cycle.end());
+				return true;
+			}
+		};
+	\end{lstlisting}
+	
+	\subsection{Kruskal -- $O(E \log E)$}
+	
+	\begin{lstlisting}[style=cpp, title={Kruskal.cpp}]
+		/*
+		*Description:* MST in O(E log E)
+		*Status:* Tested
+		*/
+		struct Edge {
+			int a; int b; ll w;
+			Edge(int a_, int b_, ll w_)
+			: a(a_), b(b_), w(w_) {}
+		};
+		bool c_edge(Edge &a, Edge &b) {
+			return a.w < b.w;
+		}
+		ll Kruskal() {
+			int n = G.size();
+			union_find sets(n);
+			vector<Edge> edges;
+			for(int i = 0; i < n; i++) {
+				for(auto eg : G[i]) {
+					edges.emplace_back(
+					i, eg.first, eg.second);
+				}
+			}
+			sort(edges.begin(), edges.end(), c_edge);
+			ll min_cost = 0;
+			for(Edge e : edges) {
+				if(!sets.sameSet(e.a, e.b)) {
+					tree.emplace_back(e.a, e.b, e.w);
+					min_cost += e.w;
+					sets.unionSet(e.a, e.b);
+				}
+			}
+			return min_cost;
+		}
+	\end{lstlisting}
+	
+	\subsection{LCA -- $O(V \log V)$ build, $O(\log V)$ query}
+	
+	\begin{lstlisting}[style=cpp, title={LCA.cpp}]
+		/*
+		*Description:* Lowest common ancestor via
+		binary lifting.
+		*Status:* Tested
+		*/
+		struct LCA {
+			vector<vector<int>> T, parent;
+			vector<int> depth, vis;
+			int LOGN, V;
+			LCA(vector<vector<int>> &T, int logn = 20)
+			: T(T), LOGN(logn), vis(T.size()) {
+				parent.assign(T.size()+1,
+				vector<int>(LOGN, 0));
+				depth.assign(T.size()+1, 0);
+			}
+			void dfs(int u = 0, int p = -1) {
+				vis[u] = true;
+				for (int v : T[u]) {
+					if (p != v) {
+						depth[v] = depth[u] + 1;
+						parent[v][0] = u;
+						for (int j = 1; j < LOGN; j++)
+						parent[v][j] =
+						parent[parent[v][j-1]][j-1];
+						dfs(v, u);
+					}
+				}
+			}
+			int query(int u, int v) {
+				if (depth[u] < depth[v]) swap(u, v);
+				int k = depth[u]-depth[v];
+				for (int j = LOGN-1; j >= 0; j--)
+				if (k & (1 << j))
+				u = parent[u][j];
+				if (u == v) return u;
+				for (int j = LOGN-1; j >= 0; j--) {
+					if (parent[u][j] != parent[v][j]) {
+						u = parent[u][j];
+						v = parent[v][j];
+					}
+				}
+				return parent[u][0];
+			}
+		};
+	\end{lstlisting}
+	
+	\subsection{Union-Find / DSU -- $O(\alpha(n))$}
+	
+	\begin{lstlisting}[style=cpp, title={dsu.cpp}]
+		/*
+		*Description:* Union-Find, path compression
+		+ union by size. O(alpha(n)) amortized.
+		*Status:* Highly tested
+		*/
+		struct union_find {
+			vector<int> e;
+			union_find(int n) { e.assign(n, -1); }
+			int findSet(int x) {
+				return (e[x] < 0
+				? x : e[x] = findSet(e[x]));
+			}
+			bool sameSet(int x, int y) {
+				return findSet(x) == findSet(y);
+			}
+			int size(int x) { return -e[findSet(x)]; }
+			bool unionSet(int x, int y) {
+				x = findSet(x), y = findSet(y);
+				if (x == y) return 0;
+				if (e[x] > e[y]) swap(x, y);
+				e[x] += e[y], e[y] = x;
+				return 1;
+			}
+		};
+	\end{lstlisting}
+	
+	% -----------------------------------------------
+	\section{Estructuras de Datos}
+	% -----------------------------------------------
+	
+	\subsection{Segment Tree -- $O(\log n)$}
+	
+	\begin{lstlisting}[style=cpp, title={segtree.cpp}]
+		/*
+		*Description:* Build O(n), query/update O(log n),
+		positions [0, n-1]
+		*Status:* Highly tested
+		*/
+		int sum_op(int a, int b){ return a + b; }
+		
+		template<class T, T (*m_)(T, T)>
+		struct segment_tree{
+			int n; vector<T> ST;
+			segment_tree(){}
+			segment_tree(vector<T> &a){
+				n = a.size(); ST.resize(n << 1);
+				for(int i=n;i<(n<<1);i++) ST[i]=a[i-n];
+				for(int i=n-1;i>0;i--)
+				ST[i]=m_(ST[i<<1],ST[i<<1|1]);
+			}
+			void update(int pos, T val){
+				ST[pos += n] = val;
+				for(pos >>= 1; pos > 0; pos >>= 1)
+				ST[pos] = m_(ST[pos<<1], ST[pos<<1|1]);
+			}
+			T query(int l, int r){
+				T ansL, ansR; bool hasL=0, hasR=0;
+				for(l+=n, r+=n+1; l<r; l>>=1, r>>=1){
+					if(l&1)
+					ansL=(hasL?m_(ansL,ST[l++]):ST[l++]),
+					hasL=1;
+					if(r&1)
+					ansR=(hasR?m_(ST[--r],ansR):ST[--r]),
+					hasR=1;
+				}
+				if(!hasL) return ansR;
+				if(!hasR) return ansL;
+				return m_(ansL, ansR);
+			}
+		};
+		
+		int main(){
+			int n; cin >> n;
+			vector<int> a(n);
+			for(int i = 0; i < n; i++) cin >> a[i];
+			segment_tree<int, sum_op> st(a);
+			int q; cin >> q;
+			while(q--){
+				int type; cin >> type;
+				if(type == 1){
+					int pos, val; cin >> pos >> val;
+					st.update(pos, val);
+				}else{
+					int l, r; cin >> l >> r;
+					cout << st.query(l, r) << '\n';
+				}
+			}
+		}
+	\end{lstlisting}
+	
+	\subsection{Sparse Table -- $O(n \log n)$ build, $O(1)$ query}
+	
+	\begin{lstlisting}[style=cpp, title={sparse-table.cpp}]
+		/*
+		*Description:* Build O(n log n), query O(1).
+		Only idempotent ops (min, max, gcd).
+		No updates.
+		*Status:* Highly tested
+		*/
+		int min_op(int a, int b){ return min(a, b); }
+		
+		template <typename T, T (*m_)(T, T)>
+		struct sparse_table {
+			int n;
+			vector<vector<T>> table;
+			sparse_table() {}
+			sparse_table(vector<T> &arr) {
+				n = arr.size();
+				int k = log2_floor(n) + 1;
+				table.assign(n, vector<T>(k));
+				for(int i = 0; i < n; i++)
+				table[i][0] = arr[i];
+				for(int j = 1; j < k; j++)
+				for(int i = 0; i+(1<<j) <= n; i++)
+				table[i][j] = m_(table[i][j-1],
+				table[i+(1<<(j-1))][j-1]);
+			}
+			T query(int l, int r) {
+				int k = log2_floor(r - l + 1);
+				return m_(table[l][k],
+				table[r-(1<<k)+1][k]);
+			}
+			int log2_floor(int n) {
+				return n ? __builtin_clzll(1)
+				- __builtin_clzll(n) : -1;
+			}
+		};
+		
+		int main(){
+			int n; cin >> n;
+			vector<int> a(n);
+			for(int i = 0; i < n; i++) cin >> a[i];
+			sparse_table<int, min_op> st(a);
+			int q; cin >> q;
+			while(q--){
+				int l, r; cin >> l >> r;
+				cout << st.query(l, r) << '\n';
+			}
+		}
+	\end{lstlisting}
+	
+	\subsection{Segment Tree Lazy -- $O(\log n)$}
+	
+	\begin{lstlisting}[style=cpp, title={segment-tree-lazy.cpp}]
+		/*
+		*Description:* Seg tree + range updates,
+		build O(n), query/update O(log n)
+		*Status:* Highly tested
+		*/
+		using T1 = long long;
+		using T2 = long long;
+		
+		T1 merge_op(T1 a, T1 b){ return a + b; }
+		
+		void pushUpd_op(T2& parent, T2& child,
+		int l, int r, int cl, int cr){
+			child += parent;
+		}
+		
+		void applyUpd_op(T2& lazy, T1& val,
+		int l, int r){
+			val += (r - l + 1) * lazy;
+		}
+		
+		template<
+		class T1, class T2,
+		T1 (*merge)(T1, T1),
+		void (*pushUpd)(T2&,T2&,int,int,int,int),
+		void (*applyUpd)(T2&, T1&, int, int)
+		>
+		struct segment_tree_lazy{
+			vector<T1> ST; vector<T2> lazy;
+			vector<bool> upd; int n;
+			void build(int i, int l, int r,
+			vector<T1>&values){
+				if(l == r){ ST[i] = values[l]; return; }
+				build(i<<1, l, (l+r)>>1, values);
+				build(i<<1|1, (l+r)/2+1, r, values);
+				ST[i] = merge(ST[i<<1], ST[i<<1|1]);
+			}
+			segment_tree_lazy() {}
+			segment_tree_lazy(vector<T1>&values){
+				n = values.size(); ST.resize(n<<2|3);
+				lazy.resize(n<<2|3);
+				upd.resize(n<<2|3, false);
+				build(1, 0, n-1, values);
+			}
+			void push(int i, int l, int r){
+				if(upd[i]){
+					applyUpd(lazy[i], ST[i], l, r);
+					if(l != r){
+						pushUpd(lazy[i], lazy[i<<1],
+						l, r, l, (l+r)/2);
+						pushUpd(lazy[i], lazy[i<<1|1],
+						l, r, (l+r)/2+1, r);
+						upd[i<<1] = 1;
+						upd[i<<1|1] = 1;
+					}
+					upd[i] = false;
+					lazy[i] = T2();
+				}
+			}
+			void update(int i, int l, int r,
+			int a, int b, T2 &u){
+				if(l >= a and r <= b){
+					pushUpd(u, lazy[i], a, b, l, r);
+					upd[i] = true;
+				}
+				push(i, l, r);
+				if(l > b or r < a) return;
+				if(l >= a and r <= b) return;
+				update(i<<1, l, (l+r)>>1, a, b, u);
+				update(i<<1|1, (l+r)/2+1, r, a, b, u);
+				ST[i] = merge(ST[i<<1], ST[i<<1|1]);
+			}
+			void update(int a, int b, T2 u){
+				if(a > b){
+					update(0, b, u);
+					update(a, n-1, u);
+					return;
+				}
+				update(1, 0, n-1, a, b, u);
+			}
+			T1 query(int i, int l, int r,
+			int a, int b){
+				push(i, l, r);
+				if(a <= l and r <= b) return ST[i];
+				int mid = (l+r) >> 1;
+				if(mid < a)
+				return query(i<<1|1, mid+1, r, a, b);
+				if(mid >= b)
+				return query(i<<1, l, mid, a, b);
+				return merge(
+				query(i<<1, l, mid, a, b),
+				query(i<<1|1, mid+1, r, a, b));
+			}
+			T1 query(int a, int b){
+				if(a > b)
+				return merge(query(a,n-1), query(0,b));
+				return query(1, 0, n-1, a, b);
+			}
+		};
+		
+		int main(){
+			int n; cin >> n;
+			vector<long long> a(n);
+			for(int i = 0; i < n; i++) cin >> a[i];
+			segment_tree_lazy<long long, long long,
+			merge_op, pushUpd_op, applyUpd_op> st(a);
+			int q; cin >> q;
+			while(q--){
+				int type; cin >> type;
+				if(type == 1){
+					int l, r; long long val;
+					cin >> l >> r >> val;
+					st.update(l, r, val);
+				}else{
+					int l, r; cin >> l >> r;
+					cout << st.query(l, r) << '\n';
+				}
+			}
+		}
+	\end{lstlisting}
+	
+	% -----------------------------------------------
+	\section{Matem\'aticas}
+	% -----------------------------------------------
+	
+	\subsection{BinPow -- $O(\log b)$}
+	
+	\begin{lstlisting}[style=cpp, title={BinPow.cpp}]
+		/*
+		*Description:* a^b mod m in O(log b)
+		*Status:* Highly tested
+		*/
+		ll binpow(ll a, ll b, ll m) {
+			a %= m;
+			ll res = 1;
+			while (b > 0) {
+				if (b & 1)
+				res = (res * a) % m;
+				a = (a * a) % m;
+				b >>= 1;
+			}
+			return res;
+		}
+	\end{lstlisting}
+	
+	\subsection{GetDivisors -- $O(\sqrt{n})$}
+	
+	\begin{lstlisting}[style=cpp, title={GetDivisors.cpp}]
+		/*
+		*Description:* All divisors in O(sqrt(n)),
+		includes 1 and n
+		*Status:* Highly tested
+		*/
+		vector<ll> get_divisors(ll n) {
+			vector<ll> left, right;
+			for (ll i = 1; i * i <= n; i++)
+			if (n % i == 0) {
+				left.push_back(i);
+				if (i != n / i)
+				right.push_back(n / i);
+			}
+			reverse(begin(right), end(right));
+			for (ll x : right) left.push_back(x);
+			return left;
+		}
+	\end{lstlisting}
+	
+	\subsection{Criba de Erat\'ostenes -- $O(n \log \log n)$}
+	
+	\begin{lstlisting}[style=cpp, title={criba.cpp}]
+		/*
+		*Description:* All primes up to n,
+		O(n log(log(n)))
+		*Status:* Highly tested
+		*/
+		struct eratosthenes_sieve {
+			vector<ll> primes;
+			vector<bool> isPrime;
+			eratosthenes_sieve(ll n) {
+				isPrime.resize(n + 1, true);
+				isPrime[0] = isPrime[1] = false;
+				for (ll i = 2; i <= n; i++) {
+					if (isPrime[i]) {
+						primes.push_back(i);
+						for (ll j = i*i; j <= n; j += i)
+						isPrime[j] = false;
+					}
+				}
+			}
+		};
+	\end{lstlisting}
+	
+	\subsection{GCD extendido -- $O(\log(\min(a,b)))$}
+	
+	\begin{lstlisting}[style=cpp, title={GCD-extendido.cpp}]
+		/*
+		*Description:* Extended euclidean algorithm,
+		O(log(min(a,b)))
+		*Status:* Tested
+		*/
+		struct GCD_type { ll x, y, d; };
+		GCD_type ex_GCD(ll a, ll b){
+			if (b == 0) return {1, 0, a};
+			GCD_type pom = ex_GCD(b, a % b);
+			return {pom.y, pom.x - a/b * pom.y, pom.d};
+		}
+	\end{lstlisting}
+	
+	\subsection{Factores Primos -- $O(\sqrt{n})$}
+	
+	\begin{lstlisting}[style=cpp, title={Factores-primos.cpp}]
+		/*
+		*Description:* Prime factors of n, O(sqrt(n))
+		*Status:* Highly tested
+		*/
+		vector<ll> primeFactors(ll n) {
+			vector<ll> factors;
+			for (ll i = 2; (i*i) <= n; i++) {
+				while (n % i == 0) {
+					factors.push_back(i);
+					n /= i;
+				}
+			}
+			if (n > 1) factors.push_back(n);
+			return factors;
+		}
+	\end{lstlisting}
+	
+	% -----------------------------------------------
+	\section{Strings}
+	% -----------------------------------------------
+	
+	\subsection{KMP -- $O(n+m)$}
+	
+	\begin{lstlisting}[style=cpp, title={KMP.cpp}]
+		/*
+		*Description:* Pattern matching in O(n+m)
+		*Status:* Tested on CSES
+		*/
+		template<class T> struct KMP {
+			T pattern; vector<int> lps;
+			KMP(T &pat): pattern(pat) {
+				lps.resize(pat.size(), 0);
+				int len = 0, i = 1;
+				while (i < pattern.size()) {
+					if (pattern[i] == pattern[len])
+					lps[i++] = ++len;
+					else {
+						if (len != 0) len = lps[len-1];
+						else lps[i++] = 0;
+					}
+				}
+			}
+			vector<int> search(T &text) {
+				vector<int> matches;
+				int i = 0, j = 0;
+				while (i < text.size()) {
+					if (pattern[j] == text[i]) {
+						i++, j++;
+						if (j == pattern.size()) {
+							matches.push_back(i - j);
+							j = lps[j - 1];
+						}
+					} else {
+						if (j != 0) j = lps[j-1];
+						else i++;
+					}
+				}
+				return matches;
+			}
+		};
+		
+		// Prefix function (simple version)
+		template<class T>
+		vector<int> prefix(T &S) {
+			vector<int> P(S.size());
+			P[0] = 0;
+			for(int i = 1; i < S.size(); ++i) {
+				P[i] = P[i - 1];
+				while(P[i] > 0 && S[P[i]] != S[i])
+				P[i] = P[P[i] - 1];
+				if(S[P[i]] == S[i])
+				++P[i];
+			}
+			return P;
+		}
+		
+		int main(){
+			string text, pattern;
+			cin >> text >> pattern;
+			KMP<string> kmp(pattern);
+			vector<int> matches = kmp.search(text);
+			cout << matches.size() << '\n';
+			for(int x : matches) cout << x << " ";
+			cout << '\n';
+		}
+	\end{lstlisting}
+	
+	\subsection{Z-Function -- $O(n+m)$}
+	
+	\begin{lstlisting}[style=cpp, title={z-function.cpp}]
+		/*
+		*Description:* Z-algorithm, all occurrences
+		in O(n+m)
+		*Status:* Tested
+		*/
+		struct Z {
+			int n, m;
+			vector<int> z;
+			Z(string s) {
+				n = s.size();
+				z.assign(n, 0);
+				int l = 0, r = 0;
+				for (int i = 1; i < n; i++) {
+					if (i <= r)
+					z[i] = min(r-i+1, z[i-l]);
+					while (i+z[i] < n
+					&& s[z[i]] == s[i+z[i]])
+					++z[i];
+					if (i+z[i]-1 > r)
+					l = i, r = i+z[i]-1;
+				}
+			}
+			Z(string p, string t) {
+				string s = p + "#" + t;
+				n = p.size();
+				m = t.size();
+				z.assign(n+m+1, 0);
+				int l = 0, r = 0;
+				for (int i = 1; i < n+m+1; i++) {
+					if (i <= r)
+					z[i] = min(r-i+1, z[i-l]);
+					while (i+z[i] < n+m+1
+					&& s[z[i]] == s[i+z[i]])
+					++z[i];
+					if (i+z[i]-1 > r)
+					l = i, r = i+z[i]-1;
+				}
+			}
+			void p_in_t(vector<int>& ans) {
+				for (int i = n+1; i < n+m+1; i++)
+				if (z[i] == n)
+				ans.push_back(i-n-1);
+			}
+		};
+		
+		int main(){
+			string t, p;
+			cin >> t >> p;
+			Z z(p, t);
+			vector<int> ans;
+			z.p_in_t(ans);
+			cout << ans.size() << '\n';
+			for(int x : ans) cout << x << " ";
+			cout << '\n';
+		}
+	\end{lstlisting}
+	
+	\subsection{Trie -- $O(|s|)$ por operaci\'on}
+	
+	\begin{lstlisting}[style=cpp, title={trie.cpp}]
+		/*
+		*Description:* Trie for prefix queries.
+		O(|s|) per operation.
+		*Status:* Tested
+		*/
+		struct trie {
+			vector<vector<ll>> tree;
+			vector<ll> counts;
+			trie() {
+				tree.push_back(vector<ll>(26, -1));
+				counts.push_back(0);
+			};
+			void insert(string &s) {
+				ll i = 0, u = 0;
+				while(i < s.size()){
+					char c = s[i];
+					if (tree[u][c-'a'] == -1){
+						ll pos = tree.size();
+						tree.push_back(vector<ll>(26, -1));
+						counts.push_back(0);
+						tree[u][c-'a'] = pos;
+					}
+					i++;
+					u = tree[u][c-'a'];
+				}
+				counts[u]++;
+			}
+			ll search(string &s){
+				ll i = 0, u = 0;
+				ll count_ends = 0;
+				while(i < s.size()){
+					char c = s[i];
+					if (tree[u][c-'a'] != -1){
+						u = tree[u][c-'a'];
+						i++;
+					}else break;
+				}
+				if(i == s.size())
+				count_ends += counts[u];
+				return count_ends;
+			}
+		};
+		
+		int main(){
+			int n; cin >> n;
+			trie t;
+			for(int i = 0; i < n; i++){
+				string s; cin >> s;
+				t.insert(s);
+			}
+			int q; cin >> q;
+			while(q--){
+				string s; cin >> s;
+				cout << t.search(s) << '\n';
+			}
+		}
+	\end{lstlisting}
+	
+	% -----------------------------------------------
+	\section{Geometr\'ia}
+	% -----------------------------------------------
+	% Tu codigo aqui
+	
+	% -----------------------------------------------
+	\section{Programaci\'on Din\'amica}
+	% -----------------------------------------------
+	
+	\subsection{Longest Increasing Subsequence -- $O(n \log n)$}
+	
+	\begin{lstlisting}[style=cpp, title={LIS.cpp}]
+		/*
+		*Description:* LIS in O(n log n),
+		allows sequence recovery
+		*Status:* Highly tested
+		*/
+		template <class I>
+		vector<int> LIS(const vector<I> &S) {
+			if (S.empty()) return {};
+			vector<int> prev(S.size());
+			vector<pair<I, int>> res;
+			for (int i = 0; i < S.size(); i++) {
+				auto it = lower_bound(res.begin(),
+				res.end(), pair<I,int>{S[i], i});
+				if (it == res.end())
+				res.emplace_back(), it = res.end()-1;
+				*it = {S[i], i};
+				prev[i] = (it == res.begin()
+				? 0 : (it-1)->second);
+			}
+			int L = res.size(),
+			cur = res.back().second;
+			vector<int> ans(L);
+			while (L--)
+			ans[L] = cur, cur = prev[cur];
+			return ans;
+		}
+		
+		int main(){
+			int n; cin >> n;
+			vector<int> a(n);
+			for(int i = 0; i < n; i++) cin >> a[i];
+			vector<int> lis_idx = LIS(a);
+			cout << lis_idx.size() << '\n';
+			for(int i = 0; i < (int)lis_idx.size(); i++)
+			cout << lis_idx[i] << " ";
+			cout << '\n';
+		}
+	\end{lstlisting}
+	
+	\subsection{Knapsack 0/1 -- $O(nW)$}
+	
+	\begin{lstlisting}[style=cpp, title={mochila.cpp}]
+		void solve(){
+			ll n, w;
+			cin >> n >> w;
+			vector<pair<ll,ll>> v(n);
+			for(auto &[a,b] : v) cin >> a >> b;
+			vector<ll> ans(w+2,0);
+			ll ans_ = 0;
+			for(auto [vi, wi] : v){
+				for(ll j = w; j >= wi; j--){
+					ans[j] = max(ans[j], ans[j-wi]+vi);
+					ans_ = max(ans_, ans[j]);
+				}
+			}
+			cout << ans_ << endl;
+		}
+	\end{lstlisting}
+	
+	% -----------------------------------------------
+	\section{Miscel\'aneos}
+	% -----------------------------------------------
+	
+	\subsection{B\'usqueda Binaria -- $O(\log n)$}
+	
+	\begin{lstlisting}[style=cpp, title={binary search.cpp}]
+		int bs(vector<ll>& v, int b){
+			int l = 0, r = v.size();
+			while(l < r){
+				int mid = (l + r) / 2;
+				if(v[mid] >= b) r = mid;
+				else l = mid + 1;
+			}
+			return l;
+		}
+	\end{lstlisting}
+	
+\end{document}
