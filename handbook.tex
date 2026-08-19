@@ -561,109 +561,916 @@
 	\section{Matem\'aticas}
 	% -----------------------------------------------
 	
-	\subsection{BinPow -- $O(\log b)$}
+	
+	\subsection{Template}
+	
+	\begin{lstlisting}[style=cpp, title={template.cpp}]
+#include<bits/stdc++.h>
+
+using namespace std;
+
+#define ll long long
+#define ld long double
+#define cd complex<long double>
+#define ull unsigned long long
+#define for_(i, n) for(ll i = 0; i < n; ++i)
+#define INF LLONG_MAX
+#define NINF LLONG_MIN
+#define i128 __int128
+#define u128 __uint128_t
+const double PI = 3.141592653589793238462643383279502884197169399375105;
+const double EPS = 1e-18;
+
+
+const ll mod = 1e9 + 7; //switch per case
+	\end{lstlisting}
+
+	\subsection{BinPow}
 	
 	\begin{lstlisting}[style=cpp, title={BinPow.cpp}]
-		/*
-		*Description:* a^b mod m in O(log b)
-		*Status:* Highly tested
-		*/
-		ll binpow(ll a, ll b, ll m) {
-			a %= m;
-			ll res = 1;
-			while (b > 0) {
-				if (b & 1)
-				res = (res * a) % m;
-				a = (a * a) % m;
-				b >>= 1;
-			}
-			return res;
-		}
+/*
+Tested : Tested
+*/
+
+ll binpow(ll a, ll b, ll m){
+    ll ans = 1;
+    while(b > 0){
+        if(b&1) ans = (ans*a)%m;
+        a=(a*a)%m;
+        b>>=1;
+    }
+    return ans;
+}
 	\end{lstlisting}
 	
-	\subsection{GetDivisors -- $O(\sqrt{n})$}
+	\subsection{CatalanNumbers}
 	
-	\begin{lstlisting}[style=cpp, title={GetDivisors.cpp}]
-		/*
-		*Description:* All divisors in O(sqrt(n)),
-		includes 1 and n
-		*Status:* Highly tested
-		*/
-		vector<ll> get_divisors(ll n) {
-			vector<ll> left, right;
-			for (ll i = 1; i * i <= n; i++)
-			if (n % i == 0) {
-				left.push_back(i);
-				if (i != n / i)
-				right.push_back(n / i);
-			}
-			reverse(begin(right), end(right));
-			for (ll x : right) left.push_back(x);
-			return left;
-		}
+	\begin{lstlisting}[style=cpp, title={CatalanNumbers.cpp}]
+//n-catalan number = (2n)!/((n+1)!n!)
+ll getNCatalanNumber(ll n){
+    double ans = 1;
+    for(ll k = 2; k <= n; k++) ans *= (n+k)/k;
+    return (ll)(ans + 0.001);
+}
+//TESTED
+vector<ll> getCatalanNumbers(ll n){
+    vector<ll> C(n+1, 0);
+    C[0] = C[1] = 1;
+    C[2] = 2;
+    for(ll i = 3; i <= n; ++i){
+        for(ll j = 0; j < i; ++j) C[i] += C[j]*C[i-j-1];
+    }
+    return C;
+}
 	\end{lstlisting}
 	
-	\subsection{Criba de Erat\'ostenes -- $O(n \log \log n)$}
+	\subsection{ConvexHull}
 	
-	\begin{lstlisting}[style=cpp, title={criba.cpp}]
-		/*
-		*Description:* All primes up to n,
-		O(n log(log(n)))
-		*Status:* Highly tested
-		*/
-		struct eratosthenes_sieve {
-			vector<ll> primes;
-			vector<bool> isPrime;
-			eratosthenes_sieve(ll n) {
-				isPrime.resize(n + 1, true);
-				isPrime[0] = isPrime[1] = false;
-				for (ll i = 2; i <= n; i++) {
-					if (isPrime[i]) {
-						primes.push_back(i);
-						for (ll j = i*i; j <= n; j += i)
-						isPrime[j] = false;
-					}
-				}
-			}
-		};
+	\begin{lstlisting}[style=cpp, title={convexhull.cpp}]
+
+//TESTED
+//Monotic Change
+struct point{
+    double x,  y;
+};
+ll orientation(const point &a, const point &b,const point &c){
+    double sign = a.x*(b.y - c.y) - b.x*(a.y - c.y) + c.x*(a.y -b.y);
+    if(sign > 0) return 1;
+    else if( sign < 0) return -1;
+    else return 0;
+}
+bool cw(const point &a, const point &b,const point &c,const bool &include_colider){
+    ll o = orientation(a, b, c);
+    return (o > 0 || include_colider && 0==0);
+}
+
+bool ccw(const point &a, const point &b,const point &c,const bool &include_colider){
+    ll o = orientation(a, b, c);
+    return (o < 0 || include_colider && o==0);
+}
+
+void convex_hull(vector<point> &a, bool include_colider){
+    if(a.size()==1) return;
+    sort(a.begin(), a.end(), [](const point &p1, const point &p2){return (p1.x==p2.x ? p1.y < p2.y : p1.x < p2.x);});
+    point A = a[0], B = a[a.size()-1];
+    vector<point> upper, lower;
+    upper.push_back(A);
+    lower.push_back(A);
+    for(ll i = 1; i < a.size(); ++i){
+        if(i == a.size()-1 || cw(A, a[i], B, include_colider)){
+            while(upper.size() >= 2 && !(cw(upper[upper.size()-2], upper[upper.size()-1], a[i], include_colider))) upper.pop_back();
+            upper.push_back(a[i]);
+        }
+        if(i == a.size()-1 || ccw(A, a[i], B, include_colider)){
+            while(lower.size() >= 2 && !(ccw(lower[lower.size()-2], lower[lower.size()-1], a[i], include_colider))) lower.pop_back();
+            lower.push_back(a[i]);
+        }
+    }
+    if(include_colider && upper.size() == a.size()){
+        reverse(a.begin(), a.end());
+        return;
+    }
+    a.clear();
+    for(ll i = 0; i < upper.size(); ++i) a.push_back(upper[i]);
+    for(ll i = lower.size()-2; i >= 1; --i) a.push_back(lower[i]);
+}
 	\end{lstlisting}
 	
-	\subsection{GCD extendido -- $O(\log(\min(a,b)))$}
+	\subsection{Chinese Remainder Theorem}
 	
-	\begin{lstlisting}[style=cpp, title={GCD-extendido.cpp}]
-		/*
-		*Description:* Extended euclidean algorithm,
-		O(log(min(a,b)))
-		*Status:* Tested
-		*/
-		struct GCD_type { ll x, y, d; };
-		GCD_type ex_GCD(ll a, ll b){
-			if (b == 0) return {1, 0, a};
-			GCD_type pom = ex_GCD(b, a % b);
-			return {pom.y, pom.x - a/b * pom.y, pom.d};
-		}
+	\begin{lstlisting}[style=cpp, title={crt.cpp}]
+//TESTED (PD: for 2x2 system but should work for any nXn)
+#include"gcdExtended.cpp"
+
+ll mod_inv(ll a, ll m){
+    ll x, y;
+    ll g = gcdExtended(a, m, x, y);
+    x = (x%m + m)%m;
+    return x;
+}
+
+struct Congruence {
+    ll b, n;
+};
+
+ll chinese_remainder_theorem(vector<Congruence> const& congruences) {
+    ll N = 1;
+    for (auto const& congruence : congruences) N *= congruence.n;
+
+    ll x = 0;
+    for (auto const& congruence : congruences) {
+        ll b_i = congruence.b;
+        ll N_i = N / congruence.n;
+        ll invN_i = mod_inv(N_i, congruence.n);
+        i128 aux = (b_i*N_i)%N;
+        aux = (aux*invN_i)%N;
+        x = (ll) (x + aux)%N;
+    }
+    return x;
+}
 	\end{lstlisting}
 	
-	\subsection{Factores Primos -- $O(\sqrt{n})$}
+	\subsection{Discrete Log}
 	
-	\begin{lstlisting}[style=cpp, title={Factores-primos.cpp}]
-		/*
-		*Description:* Prime factors of n, O(sqrt(n))
-		*Status:* Highly tested
-		*/
-		vector<ll> primeFactors(ll n) {
-			vector<ll> factors;
-			for (ll i = 2; (i*i) <= n; i++) {
-				while (n % i == 0) {
-					factors.push_back(i);
-					n /= i;
-				}
-			}
-			if (n > 1) factors.push_back(n);
-			return factors;
-		}
+	\begin{lstlisting}[style=cpp, title={discretelog.cpp}]
+
+//Tested
+
+ll discrete_log(ll a, ll b, ll m) {
+    a %= m, b %= m;
+    if (a == 0) return b == 0 ? 1 : -1;
+    ll k = 1, add = 0, g;
+    while ((g = gcd(a, m)) > 1) {
+        if (b == k)
+            return add;
+        if (b % g)
+            return -1;
+        b /= g, m /= g, ++add;
+        k = (k * 1ll * a / g) % m;
+    }
+
+    ll n = sqrt(m) + 1;
+    ll an = 1;
+    for_(i, n) an = (an * 1ll * a) % m;
+
+    unordered_map<ll, ll> f2inv;
+    for (ll q = 0, f2 = b; q <= n; ++q) {
+        f2inv[f2] = q;
+        f2 = (f2 * 1ll * a) % m;
+    }
+
+    for (ll p = 1, f1 = k; p <= n; ++p) {
+        f1 = (f1 * 1ll * an) % m;
+        if (f2inv.count(f1)){
+            ll x = n * p - f2inv[f1] + add;
+            return x;
+        }
+    }
+    return -1;
+}
+	\end{lstlisting}
+
+	\subsection{Discrete Root}
+	
+	\begin{lstlisting}[style=cpp, title={DiscreteRoot.cpp}]
+
+//TESTED
+
+#include"gcd.cpp"
+#include"bin_pow.cpp"
+#include"tot_euler.cpp"
+#include"primitive_root.cpp"
+
+vector<ll> DiscreteRoot(ll n,ll k,ll a){
+    if(a==0) return {0};
+    ll g = generator_(n);
+
+    ll sq = (ll)sqrt(n) + 1;
+    vector<pair<ll, ll>> dec(sq);
+    for(ll i = 1; i <= sq; ++i)
+        dec[i-1] = {binpow(g, i * sq * k % (n - 1), n), i};
+    sort(dec.begin(), dec.end());
+    ll h0 = -1;
+    for_(i, sq) {
+        ll my = binpow(g, i * k % (n - 1), n) * a % n;
+        auto it = lower_bound(dec.begin(), dec.end(), make_pair(my, 0));
+        if (it != dec.end() && it->first == my) {
+            h0 = it->second * sq - i;
+            break;
+        }
+    }
+    if(h0 == -1) return {-1};
+
+    ll delta = (n-1)/gcd(k, n-1);
+    vector<ll> x;
+    for (ll h = h0 % delta; h < n-1; h += delta)
+        x.push_back(binpow(g, h, n));
+    sort(x.begin(), x.end());
+    return x;
+}
+	\end{lstlisting}
+
+	\subsection{Erathostenes Sieve}
+	
+	\begin{lstlisting}[style=cpp, title={erathostenes-sieve.cpp}]
+//Tested
+
+vector<bool> erathostenesSieve(ll n){
+  vector<bool> isprime(n+1, true);
+  isprime[0] = isprime[1] = false;
+  for(ll i = 2; i <= n; (i==2 ? i++ : i+=2)){
+    if(isprime[i]){
+      for(ll j = i*i; j <= n; j+=i) isprime[j] = false;
+    }
+  }
+  return isprime;
+}
+	\end{lstlisting}
+
+	\subsection{Factorization using Pollard Rho}
+	
+	\begin{lstlisting}[style=cpp, title={Factorization-pollard-rho.cpp}]
+
+mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+
+//TESTED up to 1e18, run T(n) < 1e8
+
+ll mult(ll a, ll b, ll m) {
+    return (__int128)a * b % m;
+}
+
+ll f(ll x, ll c, ll m) {
+    return (mult(x, x, m) + c) % m;
+}
+
+#include"gcd.cpp"
+
+ll rho(ll n, ll x0=2, ll c=1) {
+    ll x = x0;
+    ll y = x0;
+    ll g = 1;
+    while (g == 1) {
+        x = f(x, c, n);
+        y = f(y, c, n);
+        y = f(y, c, n);
+        g = gcd(abs(x - y), n);
+    }
+    return g;
+}
+
+//algorithm for the factorization
+ll brent(ll n, ll x0=2, ll c=1) {
+    ll x = x0;
+    ll g = 1;
+    ll xs, y;
+
+    ll m = 128;
+    ll l = 1;
+    ll iter = 0;
+    while (g == 1 && iter<1000) {
+        y = x;
+        ll q = 1;
+        for (ll i = 1; i < l; i++)
+            x = f(x, c, n);
+        ll k = 0;
+        while (k < l && g == 1) {
+            xs = x;
+            for (ll i = 0; i < m && i < l - k; i++) {
+                x = f(x, c, n);
+                q = mult(q, abs(y - x), n);
+            }
+            g = gcd(q, n);
+            k += m;
+        }
+        l *= 2;
+        iter++;
+    }
+    if (g == n) {
+        return n;
+    }
+    return g;
+}
+
+#include"miller_rabin.cpp"
+
+//algorithm to prime factorization
+void factorize(ll n, map<ll, ll> &factors){
+    if(n==1) return;
+    if(deterministicMillerRabin(n)){
+        factors[n]++;
+        return;
+    }
+    ll d1, d2, iter=0;
+    while(iter<1000){
+        uniform_int_distribution<ll> dist(1, n-1);
+        ll c = dist(rng);
+        ll x0 = dist(rng);
+        d1 = brent(n, x0, c), d2 = n/d1;
+        if(d1>1 && d1<n) break;
+        iter++;
+    }
+    if(d1==1 || d2==1){
+        factors[n]++;
+        return;
+    }
+    factorize(d1, factors);
+    factorize(d2, factors);
+}
+	\end{lstlisting}
+
+	\subsection{Fast Fourier Transform}
+	
+	\begin{lstlisting}[style=cpp, title={fft.cpp}]
+//Tested
+
+void fft_bottom_up(vector<cd> &c, bool inverse){
+    ll N = 1;
+    while(N < c.size()) N<<=1;
+    c.resize(N);
+    if(N<= 1) return;
+    ll cnt = 0;
+    for(ll j = 1; j < N; ++j){
+        ll bit = N >> 1;
+        while(cnt & bit){
+            cnt^=bit;
+            bit>>=1;
+        }
+        cnt^=bit;
+        if(cnt < j) swap(c[cnt], c[j]);
+    }
+
+    //n is the length of the current block of the tree, thanks to bit reversal is in order, n=2 -> depth= D-1, n=4 -> depth=D-2, and so on...
+    for(ll n = 2; n <= N; n<<=1){
+        double ang = 2*PI/n * (inverse ? -1 : 1);
+        cd wn(cos(ang), sin(ang));
+        //iterate each block(node from the current depth)
+        for(ll currblock = 0; currblock < N; currblock+=n){
+            cd w(1);
+            //iterate the node of the current block, only recover a half, because butterfly effect(como se diga la wea).
+            for(ll curr = 0; curr < n/2; ++curr){
+                cd u = c[currblock + curr], v = c[currblock + curr + n/2]*w;
+                c[currblock + curr] = u + v;
+                c[currblock + curr + n/2] = u - v;
+                w*=wn;
+            }
+        }
+    }
+    if(inverse){
+        for(cd &x : c) x/=N; 
+    }
+}
+
+vector<cd> conv(vector<cd> &c1, vector<cd> &c2){
+    vector<cd> ans; ll N=1;
+    while(N < (c1.size()+c2.size())) N<<=1;
+    c1.resize(N); c2.resize(N);
+    fft_bottom_up(c1, false);
+    fft_bottom_up(c2, false);
+    ans.resize(N);
+    for_(i, N) ans[i] = c1[i]*c2[i];
+    fft_bottom_up(ans, true);
+    return ans;
+}
+	\end{lstlisting}
+
+	\subsection{Gaussian Elimination}
+	
+	\begin{lstlisting}[style=cpp, title={gaussian-elimination.cpp}]
+//Tested
+
+bool gauss_jordan(vector<vector<ll>> A, vector<ll> &x) {
+  ll n = A.size(), m = A[0].size() - 1;
+ 
+  vector<ll> where(m, -1);
+  for (ll col = 0, row = 0; col < m && row < n; ++col) {
+    ll pivot = row;
+    for (ll i = row; i < n; ++i){
+      if (abs(A[i][col]) > abs(A[pivot][col])) pivot = i;
+    }
+    if(!A[pivot][col]) continue;
+    for (ll i = col; i <= m; ++i) swap(A[pivot][i], A[row][i]);
+    where[col] = row;
+ 
+    for(ll i = 0; i < n; ++i){
+      ll invm = binpow(A[row][col], MOD - 2, MOD);
+      if(i != row) {
+        ll c = (A[i][col] * invm) % MOD;
+        for (ll j = col; j <= m; ++j) A[i][j] = ((A[i][j] - A[row][j] * c) % MOD + MOD) % MOD;
+      }
+    }
+    ++row;
+  }
+ 
+  x.assign(m, 0);
+  for (ll i = 0; i < m; ++i){
+    if (where[i] != -1){
+      ll invm = binpow(A[where[i]][i], MOD - 2, MOD);
+      x[i] = (A[where[i]][m] * invm) % MOD;
+    }
+  }
+  for(ll i=0; i<n; ++i){
+    ll sum = 0;
+    for(ll j=0; j<m; ++j) sum += (x[j] * A[i][j])%MOD;
+    if(abs(sum - A[i][m]) > 0) return false; //No solution
+  }
+  return true;//Valid solution, trivial or infinity
+
+	\end{lstlisting}
+
+	\subsection{GCD}
+	
+	\begin{lstlisting}[style=cpp, title={gcd.cpp}]
+//Tested meme
+ll gcd(ll a, ll b){
+    if(b==0) return a;
+    return gcd(b, a%b);
+}
+
+ll gcd(ll a, ll b){
+    while(b) { ll r = a % b; a = b; b = r; }
+    return a;
+}
+	\end{lstlisting}
+	\subsection{GCD Extended}
+	
+	\begin{lstlisting}[style=cpp, title={gcdExtended.cpp}]
+//Tested
+
+ll gcdExtended(ll a, ll b, ll &x, ll &y){
+    if(b == 0){
+        x = 1;
+        y = 0;
+        return a;
+    }
+    ll x_, y_, gcd = gcdExtended(b, a%b, x_, y_);
+    x = y_;
+    y = x_ - y_*(a/b);
+    return gcd;
+}
 	\end{lstlisting}
 	
+	\subsection{Geometry Structures}
+	
+	\begin{lstlisting}[style=cpp, title={GeometryStructures.cpp}]
+
+struct p2d {
+    ll x, y;
+    p2d() {}
+    p2d(ll x, ll y): x(x), y(y) {}
+    p2d& operator+=(const p2d &p) {
+        x += p.x;
+        y += p.y;
+        return *this;
+    }
+    p2d& operator-=(const p2d &p) {
+        x -= p.x;
+        y -= p.y;
+        return *this;
+    }
+    p2d& operator*=(ll c) {
+        x *= c;
+        y *= c;
+        return *this;
+    }
+    p2d& operator/=(ll c) {
+        x /= c;
+        y /= c;
+        return *this;
+    }
+    p2d operator+(const p2d &p) const {
+        return p2d(*this) += p;
+    }
+    p2d operator-(const p2d &p) const {
+        return p2d(*this) -= p;
+    }
+    p2d operator*(ll c) const {
+        return p2d(*this) *= c;
+    }
+    p2d operator/(ll c) const {
+        return p2d(*this) /= c;
+    }
+    ll dot(p2d a, p2d b){
+        return a.x*b.x + a.y*b.y;
+    }
+    double norm2(p2d a) {
+        return sqrt(dot(a, a));
+    }
+    double norm2sq(p2d a) {
+        return dot(a, a);
+    }
+    p2d proj(p2d a, p2d b) {
+        return b*(dot(a, b) / norm2sq(b));
+    }
+    double angle(p2d a, p2d b) {
+        return acos(dot(a, b) / norm2(a) / norm2(b));
+    }
+    static ll cross(p2d a, p2d b) {
+        return a.x * b.y - a.y * b.x;
+    }
+    p2d intersect_lines(p2d a1, p2d d1, p2d a2, p2d d2){
+        ll crs = cross(d1, d2);
+        if(crs==0) return p2d(INF, INF);
+        return a1 + d1*(cross(a2 - a1, d2) / crs);
+    }
+};
+
+struct p3d {
+    ll x, y, z;
+    p3d() {}
+    p3d(ll x,ll y,ll z): x(x), y(y), z(z) {}
+    p3d& operator+=(const p3d &p) {
+        x += p.x;
+        y += p.y;
+        z += p.z;
+        return *this;
+    }
+    p3d& operator-=(const p3d &p) {
+        x -= p.x;
+        y -= p.y;
+        z -= p.z;
+        return *this;
+    }
+    p3d& operator*=(ll c) {
+        x *= c;
+        y *= c;
+        z *= c;
+        return *this;
+    }
+    p3d& operator/=(ll c) {
+        x /= c;
+        y /= c;
+        z /= c;
+        return *this;
+    }
+    p3d operator+(const p3d &p) const {
+        return p3d(*this) += p;
+    }
+    p3d operator-(const p3d &p) const {
+        return p3d(*this) -= p;
+    }
+    p3d operator*(ll c) const {
+        return p3d(*this) *= c;
+    }
+    p3d operator/(ll c) const {
+        return p3d(*this) /= c;
+    }
+    ll dot(p3d a, p3d b){
+        return a.x*b.x + a.y*b.y + a.z*b.z;
+    }
+    double norm2(p3d a) {
+        return sqrt(dot(a, a));
+    }
+    double norm2sq(p3d a) {
+        return dot(a, a);
+    }
+    p3d proj(p3d a, p3d b) {
+        return b*(dot(a, b) / norm2sq(b));
+    }
+    double angle(p3d a, p3d b) {
+        return acos(dot(a, b) / norm2(a) / norm2(b));
+    }
+    p3d cross(p3d a, p3d b) {
+        return p3d(a.y * b.z - a.z * b.y,
+                   a.z * b.x - a.x * b.z,
+                   a.x * b.y - a.y * b.x);
+    }
+    ll triple(p3d a, p3d b, p3d c) {
+        return dot(a, cross(b, c));
+    }
+
+    p3d intersect_planes(p3d a1, p3d n1, p3d a2, p3d n2, p3d a3, p3d n3){
+        p3d x(n1.x, n2.x, n3.x);
+        p3d y(n1.y, n2.y, n3.y);
+        p3d z(n1.z, n2.z, n3.z); 
+        p3d d(dot(a1, n1), dot(a2, n2), dot(a3, n3));
+        return p3d(triple(d, y, z),triple(x, d, z), triple(x, y, d)) / triple(n1, n2, n3);
+     }
+};
+//TESTED
+//orientation of triangle
+ll sign(const p2d& a, const p2d& b, const p2d& c){
+    ll val = p2d::cross(b - a, c - a);
+    if (val > 0) return 1;
+    if (val < 0) return -1;
+    return 0;
+}
+//TESTED
+bool inter1(ll a, ll b, ll c, ll d) {
+    if (a > b) swap(a, b);
+    if (c > d) swap(c, d);
+    return max(a, c) <= min(b, d);
+}
+//TESTED
+bool intersect_segments(const p2d& a, const p2d& b, const p2d& c, const p2d& d) {
+    if (sign(a, b, c) == 0 && sign(a, b, d) == 0) return inter1(a.x, b.x, c.x, d.x) && inter1(a.y, b.y, c.y, d.y);
+    ll ori1 = sign(a, b, c);
+    ll ori2 = sign(a, b, d);
+    ll ori3 = sign(c, d, a);
+    ll ori4 = sign(c, d, b);
+    return (ori1 != ori2) && (ori3 != ori4);
+}
+	\end{lstlisting}
+
+	\subsection{Inclusion Exclusion}
+	
+	\begin{lstlisting}[style=cpp, title={InclusionExclusion.cpp}]
+
+//Example cardinality of all subsets of size 1
+ll cardinalitySubset(ll subset){
+    return 1;
+}
+
+//Template
+ll InclusionExclusion(){
+    //sets
+    ll n = 10;//example
+    ll subsets = (1<<n);//total subsets
+    ll ans = 0;
+    //travel on all the subsets, with a particular subset
+    for(ll subset = 0; subset < subsets; subset++){
+        //if is odd the subset we sum, otherwise substract, recall, Union of sets = sum sets - intersect sets pairs + intersect group of three - ...
+        ans += (__builtin_popcount(subset)&1 ? cardinalitySubset(subset) : -cardinalitySubset(subset));
+    }
+    return ans;
+}
+	\end{lstlisting}
+
+	\subsection{Miller Rabin}
+	
+	\begin{lstlisting}[style=cpp, title={miller-rabin.cpp}]
+
+ll binpow(ll a, ll b, ll mod){
+  ll ans = 1;
+  while(b>0){
+    if(b&1) ans = (u128)(ans)*a % mod;
+    a=(u128)a*a % mod;
+    b>>=1;
+  }
+  return ans;
+}
+
+bool checkComposite(ll p, ll a, ll s, ll q){
+  ll x = binpow(a, q, p);
+  if(x == 1 || x == p-1) return false;
+  for(ll i = 1; i < s; ++i){
+    x = (u128)x*x % p;
+    if(x == p-1) return false;
+  }
+  return true;
+}
+
+bool millerRabin(ll p, ll maxIter=5){
+  if(p<4) return p==2 || p==3;
+  ll s=0,q = p-1;
+  while(!(q&1)){
+    s++;
+    q>>=1;
+  }
+  for(ll i = 0; i < maxIter; ++i){
+    ll a = 2 + rand() % (p-3);
+    if(checkComposite(p, a, s, q)) return false;
+  }
+  return true;
+}
+
+bool deterministicMillerRabin(ll p){
+  if(p<4) return p==2 || p==3;
+  ll s=0,q = p-1;
+  while(!(q&1)){
+    s++;
+    q>>=1;
+  }
+  for(ll a : {2,3,5,7,11,13,17,19,23,29,31,37}){
+    if(p==a) return true;
+    if(checkComposite(p, a, s, q)) return false;
+  }
+  return true;
+}
+	\end{lstlisting}
+
+	\subsection{Mobius}
+	
+	\begin{lstlisting}[style=cpp, title={mobius.cpp}]
+//Tested
+
+vector<ll> mobius(ll n){
+    vector<ll> mob(n+1);
+    mob[1] = 1;
+    vector<bool> isprime(n+1, true);
+    isprime[0]=isprime[1] = false;
+    for(ll i = 2; i < n+1; i++){
+        if(isprime[i]){
+            for(ll j = i; j < n+1; j+=i){
+                mob[j] += -1;
+                isprime[j] = false;
+            }
+            for(ll j = i*i; j < n+1; j += i*i) mob[j] = 0;
+        }
+    }
+    return mob;
+}
+	\end{lstlisting}
+
+	\subsection{Number Theoric Transform}
+	
+	\begin{lstlisting}[style=cpp, title={ntt.cpp}]
+
+//TESTED
+
+const ll mod = 998244353, generator = 3, rootn = 3; // for N max = 2^23
+/*more modelus primes of the form p = c*2^m + 1 (generators calculated with algorithm in math section): 
+const ll mod = 7340033, generator = 3, rootn = 3; // for N max = 2^20
+const ll mod = 167772161, generator = 3, rootn = 3; // for N max = 2^25
+const ll mod = 469762049, generator = 3, rootn = 3; // for N max = 2^26
+*/
+
+ll binpow(ll a, ll e){
+    ll ans = 1;
+    while(e > 0){
+        if(e&1) ans = (ans * a)%mod;
+        a = (a*a)%mod;
+        e>>=1;
+    }
+    return ans;
+}
+
+ll inv(ll a){return binpow(a, mod-2);}
+
+
+void ntt(vector<ll> &c, bool invert){
+    ll N = 1;
+    while(N < c.size())N<<=1;
+    c.resize(N);
+    ll cnt = 0;
+    for(ll j = 1; j < N; ++j){
+        ll bit = N>>1;
+        while(bit&cnt){
+            cnt^=bit;
+            bit>>=1;
+        }
+        cnt^=bit;
+        if(cnt < j) swap(c[cnt], c[j]);
+    }
+
+    for(ll n = 2; n <= N; n<<=1){
+        ll wn = binpow(rootn, (mod-1)/n);
+        if(invert) wn = inv(wn);
+        for(ll currblock = 0; currblock < N; currblock+=n){
+            ll w = 1;
+            for(ll i = 0; i < n/2; ++i){
+                ll u = c[currblock + i]%mod, v = (w*c[currblock + i + n/2])%mod;
+                c[currblock + i] = (u + v)%mod;
+                c[currblock + i + n/2] = ((u - v)%mod + mod)%mod;
+                w = (w*wn)%mod;
+            }
+        }
+    }
+    if(invert){
+        for(ll &x : c) x = (x*inv(N))%mod;
+    }
+}
+
+vector<ll> conv(vector<ll> c1, vector<ll> c2){
+    ll N=1;
+    while(N <= (c1.size() + c2.size())) N<<=1;
+    c1.resize(N); c2.resize(N);
+    ntt(c1, false);
+    ntt(c2, false);
+    vector<ll> ans(N, 0);
+    for_(i, N) ans[i] = (c1[i] * c2[i])%mod;
+    ntt(ans, true);
+    return ans;
+}
+	\end{lstlisting}
+
+	\subsection{Primitive Root (Generator of a Prime Group)}
+	
+	\begin{lstlisting}[style=cpp, title={primitive-root.cpp}]
+
+//TESTED
+
+#include"bin_pow.cpp"
+#include"tot_euler.cpp"
+
+ll generator_(ll n) {
+    vector<int> facts;
+    ll phi_n = tot_euler(n)[n], m = phi_n;
+    for(ll i=2; i*i<=m; ++i){
+        if(m % i == 0) {
+            facts.push_back(i);
+            while (m % i == 0) m/= i;
+        }
+    }
+    if(m > 1) facts.push_back(m);
+    for (ll g=2; g<=n; ++g) {
+        bool ok = true;
+        for (size_t i=0; i<facts.size() && ok; ++i) ok &= binpow(g, phi_n/facts[i], n) != 1;
+        if (ok)  return g;
+    }
+    return -1;
+}
+	\end{lstlisting}
+
+	\subsection{Simpson Rule}
+	
+	\begin{lstlisting}[style=cpp, title={SimpsonRule.cpp}]
+//TESTED
+
+ld f(ld x) {return x;}
+
+ld simpson_integration(ld a, ld b, ld d){
+    const ll N = 10000; // number of steps (already multiplied by 2)
+    ld h = (b - a) / N;
+    ld s = f(a) + f(b); // a = x_0 and b = x_2n
+    for(ll i= 1; i < N; i++) { // Refer to final Simpson's formula
+        double xi = a + h * i;
+        s += f(xi) * ((i & 1) ? 4 : 2);
+    }
+    s *= h / 3.0;
+    //1e6 is the decimal precision, if you want 7, the 1e7 and so on
+    s*=1e6;
+    s=llround(s);
+    s/=1e6;
+    // to print use cout << fixed << setprecision(6) << s;
+    return s;
+}
+	\end{lstlisting}
+
+	\subsection{Tonelli Shanks}
+	
+	\begin{lstlisting}[style=cpp, title={TonelliShanks.cpp}]
+// TESTED
+
+#include"bin_pow.cpp"
+
+ll TonelliShanks(ll n, ll p) {
+    n %= p; if (n < 0) n += p;
+    if (n == 0) return 0;
+    if (binpow(n,(p-1)/2,p) != 1) return -1; // solution does not exist
+    if (p % 4 == 3) return binpow(n, (p + 1) / 4, p); // trivial solution, only one factor 2
+    ll c = p - 1, z = 2;
+    ll s = 0;
+    while(c % 2 == 0) ++s, c /= 2;
+    // find a non-square mod p
+    while(binpow(z,(p-1)/2, p) != p - 1) ++z;
+    ll q = binpow(z, c, p); // generator subgroup, |<q>| = 2^s
+    ll a = binpow(n, (c+1)/2, p); // candidate root
+    ll t = binpow(n, c, p); // error from equation a^2 = n*t, if t=1, a is the root
+    ll m = s;
+    while(1){
+        ll i = 0, temp = t;
+        while(i < m && temp != 1){
+            temp = (temp*temp)%p;
+            i++;
+        }
+        if(i==0) return a;
+        ll exponent = 1ll << (m-i-1);
+        ll b = binpow(q, exponent, p);
+        a = (a*b)%p;
+        t = (((t*b)%p)*b)%p;
+        q = (b*b)%p;
+        m=i;
+    }
+}
+	\end{lstlisting}
+
+	\subsection{Euler Totiente}
+	
+	\begin{lstlisting}[style=cpp, title={tot-euler.cpp}]
+//Tested
+
+vector<ll> tot_euler(ll n){
+    vector<ll> tot(n+1, 0);
+    for_(i, n+1) tot[i]=i;
+    for(ll i = 2; i <= n; ++i){
+        if(tot[i] == i){
+            for(ll j = i; j <= n; j+=i) tot[j] -= tot[j]/i;
+        }
+    }
+    return tot;
+}
+	\end{lstlisting}
+
 	% -----------------------------------------------
 	\section{Strings}
 	% -----------------------------------------------
@@ -854,11 +1661,6 @@
 			}
 		}
 	\end{lstlisting}
-	
-	% -----------------------------------------------
-	\section{Geometr\'ia}
-	% -----------------------------------------------
-	% Tu codigo aqui
 	
 	% -----------------------------------------------
 	\section{Programaci\'on Din\'amica}
