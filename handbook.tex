@@ -933,6 +933,35 @@ int fenwick_tree::kth(int k) {
 }
     \end{lstlisting}
 
+    \subsection{Fenwick Tree 2D-- $O(\log n)$}
+    
+	\begin{lstlisting}[style=cpp, title={fenwick$\_$tree$\_$2d.cpp}]
+
+struct fenwick_tree_2d {
+  int N, M;
+  vector<vector<ll>> BIT;
+  fenwick_tree_2d(int N, int M): N(N), M(M) {
+    BIT.assign(N + 1, vector<ll>(M + 1, 0));
+  }
+  void update(int x, int y, ll v) {
+    for (int i = x; i <= N; i += (i & -i))
+      for (int j = y; j <= M; j += (j & -j))
+        BIT[i][j] += v;
+  }
+  ll sum(int x, int y) {
+    ll s = 0;
+    for (int i = x; i > 0; i -= (i & -i))
+      for (int j = y; j > 0; j -= (j & -j))
+        s += BIT[i][j];
+    return s;
+  }
+  ll query(int x1, int y1, int x2, int y2) {
+    return sum(x2, y2) - sum(x2, y1 - 1) - sum(x1 - 1, y2) + sum(x1 - 1, y1 - 1);
+  }
+};
+
+    \end{lstlisting}
+
     \subsection{Line container -- $O(\log n)$}
     
 	\begin{lstlisting}[style=cpp, title={line$\_$container.cpp}]
@@ -2292,7 +2321,62 @@ struct AhoCorasick {
 		}
 	\end{lstlisting}
 	
-	\subsection{Knapsack 0/1 -- $O(nW)$}
+	\subsection{LIS of length K-- $O(nk \log n)$}
+	\begin{lstlisting}[style=cpp, title={LIS$\_$lenght$\_$k.cpp}]
+    //k = searched length, m = compressed size
+    vector<fenwick_tree> bit(k + 1, fenwick_tree(m));
+
+    ll answer = 0;
+    for (ll x : v) {
+        ll value = compress(x); //or already compressed
+        vector<ll> current(k+1);
+        current[1] = 1;
+        for (ll len = 2; len <= k; len++) {
+            current[len] = bit[len-1].sum(value-1);
+        }
+        for (ll len = 1; len <= k; len++) {
+            bit[len].add(value, current[len]);
+        }
+        answer += current[k];
+    }
+
+    cout<<answer<<endl;
+	\end{lstlisting}
+	
+	\subsection{LIS elements participate of Optimal solutions-- $O(n \log n)$}
+	\begin{lstlisting}[style=cpp, title={LIS$\_$elements$\_$optimal.cpp}]
+    /*
+    L[i]: longest strictly increasing subsequence ending at i
+    R[i]: longest strictly increasing subsequence starting at i
+    Theroem: best sol force through x = best before x+best after x-overlap on x.
+    So if optimal==L[i]+R[i]-1(overlap) -> index i its part of an optimal solution
+    layer: number of LIS-participating elements
+    */
+    fenwick_max<ll> bit(m + 1);
+    fenwick_max<ll> bit2(m + 1);
+
+    vector<ll> L(n), R(n);
+
+    for (ll i = 0; i < n; i++) {
+        L[i] = bit.query(v[i] - 1) + 1;
+        bit.update(v[i], L[i]);
+    }
+
+    for (ll i = n - 1; i >= 0; i--) {
+        R[i] = bit2.query(m - v[i]) + 1;
+        bit2.update(m - v[i] + 1, R[i]);
+    }
+
+    ll k = *max_element(L.begin(), L.end());
+
+    vector<ll> layer(k + 1, 0);
+
+    for (ll i = 0; i < n; i++) {
+        if (L[i] + R[i] - 1 == k) layer[L[i]]++;
+    }
+    \end{lstlisting}
+
+    \subsection{Knapsack 0/1 -- $O(nW)$}
 	
 	\begin{lstlisting}[style=cpp, title={mochila.cpp}]
 		void solve(){
@@ -2311,7 +2395,7 @@ struct AhoCorasick {
 			cout << ans_ << endl;
 		}
 	\end{lstlisting}
-	
+
 	% -----------------------------------------------
 	\section{Miscel\'aneos}
 	% -----------------------------------------------
