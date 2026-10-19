@@ -1941,7 +1941,7 @@ bool deterministicMillerRabin(ll p){
 //Tested
 
 vector<ll> mobius(ll n){
-    vector<ll> mob(n+1);
+    vector<ll> mob(n+1, 1);
     mob[1] = 1;
     vector<bool> isprime(n+1, true);
     isprime[0]=isprime[1] = false;
