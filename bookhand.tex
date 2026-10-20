@@ -71,6 +71,24 @@
 \titlespacing*{\subsection}{0pt}{1ex}{0.3ex}
 \titlespacing*{\subsubsection}{0pt}{0.8ex}{0.2ex}
 
+\usepackage{amsmath, amssymb}
+
+% Custom style for a "Formula Card"
+\usepackage[most]{tcolorbox}
+\newtcolorbox{bitbox}[1]{
+    colback=gray!5!white,
+    colframe=gray!75!black,
+    fonttitle=\bfseries,
+    title=#1,
+    enhanced,
+    attach boxed title to top left={xshift=3mm, yshift=-2mm},
+    boxed title style={colback=gray!75!black},
+    arc=2mm,
+    boxrule=0.5pt,
+    halign=flush left, 
+    nobeforeafter
+}
+
 \begin{document}
 	
 	\begin{center}
@@ -1697,168 +1715,6 @@ ll gcdExtended(ll a, ll b, ll &x, ll &y){
     return gcd;
 }
 	\end{lstlisting}
-	
-	\subsection{Geometry Structures}
-	
-	\begin{lstlisting}[style=cpp, title={GeometryStructures.cpp}]
-
-struct p2d {
-    ll x, y;
-    p2d() {}
-    p2d(ll x, ll y): x(x), y(y) {}
-    p2d& operator+=(const p2d &p) {
-        x += p.x;
-        y += p.y;
-        return *this;
-    }
-    p2d& operator-=(const p2d &p) {
-        x -= p.x;
-        y -= p.y;
-        return *this;
-    }
-    p2d& operator*=(ll c) {
-        x *= c;
-        y *= c;
-        return *this;
-    }
-    p2d& operator/=(ll c) {
-        x /= c;
-        y /= c;
-        return *this;
-    }
-    p2d operator+(const p2d &p) const {
-        return p2d(*this) += p;
-    }
-    p2d operator-(const p2d &p) const {
-        return p2d(*this) -= p;
-    }
-    p2d operator*(ll c) const {
-        return p2d(*this) *= c;
-    }
-    p2d operator/(ll c) const {
-        return p2d(*this) /= c;
-    }
-    ll dot(p2d a, p2d b){
-        return a.x*b.x + a.y*b.y;
-    }
-    double norm2(p2d a) {
-        return sqrt(dot(a, a));
-    }
-    double norm2sq(p2d a) {
-        return dot(a, a);
-    }
-    p2d proj(p2d a, p2d b) {
-        return b*(dot(a, b) / norm2sq(b));
-    }
-    double angle(p2d a, p2d b) {
-        return acos(dot(a, b) / norm2(a) / norm2(b));
-    }
-    static ll cross(p2d a, p2d b) {
-        return a.x * b.y - a.y * b.x;
-    }
-    p2d intersect_lines(p2d a1, p2d d1, p2d a2, p2d d2){
-        ll crs = cross(d1, d2);
-        if(crs==0) return p2d(INF, INF);
-        return a1 + d1*(cross(a2 - a1, d2) / crs);
-    }
-};
-
-struct p3d {
-    ll x, y, z;
-    p3d() {}
-    p3d(ll x,ll y,ll z): x(x), y(y), z(z) {}
-    p3d& operator+=(const p3d &p) {
-        x += p.x;
-        y += p.y;
-        z += p.z;
-        return *this;
-    }
-    p3d& operator-=(const p3d &p) {
-        x -= p.x;
-        y -= p.y;
-        z -= p.z;
-        return *this;
-    }
-    p3d& operator*=(ll c) {
-        x *= c;
-        y *= c;
-        z *= c;
-        return *this;
-    }
-    p3d& operator/=(ll c) {
-        x /= c;
-        y /= c;
-        z /= c;
-        return *this;
-    }
-    p3d operator+(const p3d &p) const {
-        return p3d(*this) += p;
-    }
-    p3d operator-(const p3d &p) const {
-        return p3d(*this) -= p;
-    }
-    p3d operator*(ll c) const {
-        return p3d(*this) *= c;
-    }
-    p3d operator/(ll c) const {
-        return p3d(*this) /= c;
-    }
-    ll dot(p3d a, p3d b){
-        return a.x*b.x + a.y*b.y + a.z*b.z;
-    }
-    double norm2(p3d a) {
-        return sqrt(dot(a, a));
-    }
-    double norm2sq(p3d a) {
-        return dot(a, a);
-    }
-    p3d proj(p3d a, p3d b) {
-        return b*(dot(a, b) / norm2sq(b));
-    }
-    double angle(p3d a, p3d b) {
-        return acos(dot(a, b) / norm2(a) / norm2(b));
-    }
-    p3d cross(p3d a, p3d b) {
-        return p3d(a.y * b.z - a.z * b.y,
-                   a.z * b.x - a.x * b.z,
-                   a.x * b.y - a.y * b.x);
-    }
-    ll triple(p3d a, p3d b, p3d c) {
-        return dot(a, cross(b, c));
-    }
-
-    p3d intersect_planes(p3d a1, p3d n1, p3d a2, p3d n2, p3d a3, p3d n3){
-        p3d x(n1.x, n2.x, n3.x);
-        p3d y(n1.y, n2.y, n3.y);
-        p3d z(n1.z, n2.z, n3.z); 
-        p3d d(dot(a1, n1), dot(a2, n2), dot(a3, n3));
-        return p3d(triple(d, y, z),triple(x, d, z), triple(x, y, d)) / triple(n1, n2, n3);
-     }
-};
-//TESTED
-//orientation of triangle
-ll sign(const p2d& a, const p2d& b, const p2d& c){
-    ll val = p2d::cross(b - a, c - a);
-    if (val > 0) return 1;
-    if (val < 0) return -1;
-    return 0;
-}
-//TESTED
-bool inter1(ll a, ll b, ll c, ll d) {
-    if (a > b) swap(a, b);
-    if (c > d) swap(c, d);
-    return max(a, c) <= min(b, d);
-}
-//TESTED
-bool intersect_segments(const p2d& a, const p2d& b, const p2d& c, const p2d& d) {
-    if (sign(a, b, c) == 0 && sign(a, b, d) == 0) return inter1(a.x, b.x, c.x, d.x) && inter1(a.y, b.y, c.y, d.y);
-    ll ori1 = sign(a, b, c);
-    ll ori2 = sign(a, b, d);
-    ll ori3 = sign(c, d, a);
-    ll ori4 = sign(c, d, b);
-    return (ori1 != ori2) && (ori3 != ori4);
-}
-	\end{lstlisting}
 
 	\subsection{Inclusion Exclusion}
 	
@@ -2572,4 +2428,62 @@ struct AhoCorasick {
 		}
 	\end{lstlisting}
 	
+
+	% -----------------------------------------------
+	\section{Formulary}
+	% -----------------------------------------------
+    
+	\subsection{Bits}
+	\begin{bitbox}{LSB \& Isolation}
+        \textbf{Isolate LSB:} $\texttt{x \& -x}$ = $\texttt{x \& (\textasciitilde x + 1)}$ \\
+        \textbf{Remove LSB:} $\texttt{x \& (x - 1)}$ \\
+        \textbf{XOR: } $\texttt{(x + y) - 2*(x and y)}$ \\
+        \textbf{Full Mask ($k$ bits):} \texttt{(1 << k) - 1}
+    \end{bitbox}
+    \begin{bitbox}{Subset Logics}
+        \textbf{Subset Check:} \texttt{(A \& B) == A} \\
+        \textbf{Iterate Submasks:} \texttt{for (s=m; s>0; s=(s-1)\&m)} \\
+        \textbf{Mask Complement:} \texttt{\textasciitilde x \& mask}
+\end{bitbox}
+    \begin{bitbox}{Advanced Bit Arithmetic}
+        \textbf{Fast Average:} \texttt{(x \& y) + ((x \textasciitilde y) >> 1)} \\
+        \textbf{Fast Modulo $2^k$:} \texttt{x \& ((1 << k) - 1)} \\
+        \textbf{Parity:} \texttt{\_\_builtin\_popcount(x) \& 1}
+    \end{bitbox}
+    \begin{bitbox}{Iota \& Sequences}
+        \textbf{std iota:} \texttt{std::iota(begin, end, val)} $\rightarrow$ $val, val+1, \dots$ \\
+        \textbf{Binary $\rightarrow$ Gray Code:} \texttt{i \textasciitilde (i >> 1)} \\
+    \end{bitbox}
+    \begin{bitbox}{Gosper's Hack (Next $k$-bit integer)}
+        Gosper's Hack is used to find the next lexicographical integer with the same number of set bits. \\
+
+        If you have a number x with $k$ bits set, Gosper's Hack gives you the smallest number greater than x that also has exactly $k$ bits set.
+        \textbf{Formula:} \\
+        \texttt{int c = x \& -x, r = x + c;} \\
+        \texttt{x = (((r \textasciitilde x) >> 2) / c) | r;} \\
+        \textit{Iterates only through numbers with exactly $k$ bits set.}
+    \end{bitbox}
+    \begin{bitbox}{Bit-Reversal}
+        \textbf{Mapping:} $i \rightarrow$ reverse bits of $i$ over $W$ bits \\
+        \textbf{Formula:} $rev(x) = \sum_{i=0}^{W-1} ((x \gg i) \& 1) \ll (W-1-i)$
+        \textbf{Algorithm:} \\
+        \texttt{int rev = 0;} \\
+        \texttt{for(int i=0; i<W; i++) rev = (rev << 1) | ((x >> i) \& 1);}
+    \end{bitbox}
+    \begin{bitbox}{GCC Built-ins}
+        \texttt{\_\_builtin\_popcount(x)} $\rightarrow$ Counts set bits (1s) \\
+        \texttt{\_\_builtin\_clz(x)} $\rightarrow$ Leading zeros (Finds $\lfloor \log_2(x) \rfloor$) \\
+        \texttt{\_\_builtin\_ctz(x)} $\rightarrow$ Trailing zeros (Finds index of LSB) \\
+        \texttt{\_\_builtin\_ffs(x)} $\rightarrow$ Index of first set bit (1-indexed)
+    \end{bitbox}
+    
+	\subsection{Number theory}
+    \begin{bitbox}{Advanced Modular Arithmetic}
+        \textbf{Modular Inverse (Prime $M$):} $a^{-1} \equiv a^{M-2} \pmod M$ \\
+        \textbf{Modular Inverse (General):} Solve $ax + My = 1$ via Ext. Euclidean \\
+        \textbf{Modular Division:} $(a / b) \pmod M = (a \cdot b^{-1}) \pmod M$ \\
+        \textbf{Euler's Theorem:} $a^{\phi(M)} \equiv 1 \pmod M$ \\
+        \textbf{Fermat's Little Theorem:} $a^{M-1} \equiv 1 \pmod M$ (for prime $M$) \\
+        \textbf{Chinese Remainder Theorem (CRT):} Solve $x \equiv r_i \pmod{m_i}$ \\
+    \end{bitbox}
 \end{document}
