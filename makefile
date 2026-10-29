@@ -1,3 +1,3 @@
 all:
-	go build -o gen -mod=mod
-	./gen
+	@g++ -I./renderer/vendor/PDFGen ./renderer/main.cpp ./renderer/vendor/PDFGen/*.c -o ./renderer/gen
+	@cd renderer && ./gen
