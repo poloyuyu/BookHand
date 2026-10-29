@@ -463,6 +463,7 @@ signed main()
             }
 
             const f32 x = HSPACE + column * (COL_W + COL_GAP);
+            std::cout << "procesando " << file.filename().string() << endl;
             draw_source_box(pdf, page, x, y, file.filename().string(), lines);
             y += box_h + 3.0f;
         }
