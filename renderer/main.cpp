@@ -521,18 +521,6 @@ signed main()
         y += 7.0f;
 
         for (auto& file: files) {
-            draw_index_entry(
-                pdf, front_page,
-                file.stem().string(),
-                page_number,
-                index_y[index_column],
-                index_column, false
-            );
-            if (index_y[index_column] > BOTTOM - 10.0f) {
-                index_column++;
-                WARNING_ASSERT(index_column < 2);
-            }
-
             f32 code_max_w = COL_W - GUTTER_W - 2.5f;
             auto lines = read_file(pdf, file, code_max_w);
 
@@ -547,6 +535,18 @@ signed main()
                     column = 0;
                     y = TOP;
                 }
+            }
+
+            draw_index_entry(
+                pdf, front_page,
+                file.stem().string(),
+                page_number-1,
+                index_y[index_column],
+                index_column, false
+            );
+            if (index_y[index_column] > BOTTOM - 10.0f) {
+                index_column++;
+                WARNING_ASSERT(index_column < 2);
             }
 
             const f32 x = HSPACE + column * (COL_W + COL_GAP);
