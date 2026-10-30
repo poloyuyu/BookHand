@@ -262,7 +262,7 @@ void draw_topic_title(pdf_doc* pdf, pdf_object* page, std::string topic, f32 y, 
 
     f32 col_start = HSPACE + column * (COL_W + COL_GAP);
     write_text(pdf, page, FONT_BOLD, col_start, y, slice.c_str(), 12, 'L', ink);
-    draw_line(pdf, page, col_start, y + 4.5f, col_start + COL_W, y + 4.5f, muted_crimson, 0.4f);
+    draw_line(pdf, page, col_start, y + 5.0f, col_start + COL_W, y + 5.0f, muted_crimson, 0.35f);
 }
 
 std::vector<std::pair<int, std::string>> read_file(pdf_doc* pdf, const std::filesystem::path& path, f32 max_width)
@@ -321,6 +321,7 @@ void draw_source_box(
     const std::vector<std::pair<int, std::string>>& lines
 )
 {
+    y += 1.0f;
     const f32 title_h = 4.2f;
     const f32 box_h = title_h + (f32)lines.size() * CODE_LINE_H + 1.5f;
 
@@ -360,14 +361,17 @@ void draw_source_box(
 
     pdf_add_filled_rectangle(
         pdf, page,
-        PDF_MM_TO_POINT(x),
-        PDF_MM_TO_POINT(PAGE_H) - PDF_MM_TO_POINT(y + title_h),
+        PDF_MM_TO_POINT(x + GUTTER_W),
+        PDF_MM_TO_POINT(PAGE_H) - PDF_MM_TO_POINT(y + title_h / 2.0f),
         width_name + PDF_MM_TO_POINT(4.0f),
         PDF_MM_TO_POINT(title_h),
         0.0f,
         muted_crimson.data, muted_crimson.data
     );
-    write_text(pdf, page, FONT_BOLD, x + 2.0f, y + 0.5f, slice.c_str(), TITLE_SIZE, 'L', Color(255, 255, 255));
+    write_text(pdf, page, FONT_BOLD,
+        x + GUTTER_W + 2.0f, y - title_h / 2.0f,
+        slice.c_str(), TITLE_SIZE, 'L', Color(255, 255, 255)
+    );
 
     // 5. Renderizado de líneas y tokens coloreados
     f32 cy = y + title_h + 1.0f;
