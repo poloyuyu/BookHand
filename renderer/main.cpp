@@ -248,7 +248,7 @@ void write_footer(pdf_doc* pdf, pdf_object* page, i32 page_number)
     WARNING_ASSERT(draw_line(pdf, page, LEFT_SPACE, PAGE_H - VSPACE - 4, RIGHT_SPACE, PAGE_H - VSPACE - 4, ink, 0.2f) >= 0);
 }
 
-void draw_topic_title(pdf_doc* pdf, pdf_object* page, std::string topic, f32 y, i32 column)
+void draw_topic_title(pdf_doc* pdf, pdf_object* page, std::string& topic, f32 y, i32 column)
 {
     std::string slice = (topic.size() > 3) ? topic.substr(3) : topic;
     slice[0] = std::toupper(slice[0]);
@@ -262,7 +262,7 @@ void draw_topic_title(pdf_doc* pdf, pdf_object* page, std::string topic, f32 y, 
 
     f32 col_start = HSPACE + column * (COL_W + COL_GAP);
     write_text(pdf, page, FONT_BOLD, col_start, y, slice.c_str(), 12, 'L', ink);
-    draw_line(pdf, page, col_start, y + 4.5f, col_start + COL_W, y + 4.5f, muted_crimson, 0.4f);
+    draw_line(pdf, page, col_start, y + 5.0f, col_start + COL_W, y + 5.0f, muted_crimson, 0.35f);
 }
 
 std::vector<std::pair<int, std::string>> read_file(pdf_doc* pdf, const std::filesystem::path& path, f32 max_width)
@@ -321,6 +321,7 @@ void draw_source_box(
     const std::vector<std::pair<int, std::string>>& lines
 )
 {
+    y += 1.0f;
     const f32 title_h = 4.2f;
     const f32 box_h = title_h + (f32)lines.size() * CODE_LINE_H + 1.5f;
 
@@ -360,14 +361,17 @@ void draw_source_box(
 
     pdf_add_filled_rectangle(
         pdf, page,
-        PDF_MM_TO_POINT(x),
-        PDF_MM_TO_POINT(PAGE_H) - PDF_MM_TO_POINT(y + title_h),
+        PDF_MM_TO_POINT(x + GUTTER_W),
+        PDF_MM_TO_POINT(PAGE_H) - PDF_MM_TO_POINT(y + title_h / 2.0f),
         width_name + PDF_MM_TO_POINT(4.0f),
         PDF_MM_TO_POINT(title_h),
         0.0f,
         muted_crimson.data, muted_crimson.data
     );
-    write_text(pdf, page, FONT_BOLD, x + 2.0f, y + 0.5f, slice.c_str(), TITLE_SIZE, 'L', Color(255, 255, 255));
+    write_text(pdf, page, FONT_BOLD,
+        x + GUTTER_W + 2.0f, y - title_h / 2.0f,
+        slice.c_str(), TITLE_SIZE, 'L', Color(255, 255, 255)
+    );
 
     // 5. Renderizado de líneas y tokens coloreados
     f32 cy = y + title_h + 1.0f;
@@ -395,6 +399,56 @@ void draw_source_box(
     }
 }
 
+void draw_index_entry(
+    pdf_doc* pdf,
+    pdf_object* page,
+    const std::string& text,
+    int page_number,
+    f32& y,
+    int column,
+    bool is_topic
+)
+{
+    f32 x = HSPACE + column * (COL_W + COL_GAP);
+
+    std::string slice = (text.size() > 4) ? text.substr(0, text.size()) : text;
+    slice[0] = std::toupper(slice[0]);
+    for (size_t i = 1; i + 1 < slice.size(); i++) {
+        if (slice[i] == '_') {
+            slice[i] = ' ';
+            slice[i+1] = std::toupper(slice[i+1]);
+        }
+    }
+
+    if (is_topic) {
+        y += 2.0f;
+
+        write_text(
+            pdf, page, FONT_BOLD,
+            x, y, slice.c_str(),
+            9, 'L', muted_crimson
+        );
+
+        y += 5.0f;
+    } else {
+        write_text(
+            pdf, page, FONT_CODE,
+            x + 2.0f, y, slice.c_str(),
+            7, 'L', ink
+        );
+
+        std::string number = std::to_string(page_number);
+
+        write_text(
+            pdf, page, FONT_CODE,
+            x + COL_W - 2.0f, y,
+            number.c_str(), 7, 'R', muted_crimson
+        );
+
+        y += 4.0f;
+    }
+}
+
 signed main()
 {
     pdf_info info{};
@@ -416,6 +470,15 @@ signed main()
     };
 
     pdf_object* front_page = new_page();
+
+    write_text(
+        pdf, front_page, FONT_BOLD,
+        PAGE_W / 2.0f, TOP,
+        "CHAKOTEAM! BOOKHAND", 16, 'C', ink
+    );
+
+    f32 index_y[2] = {TOP + 12.0f, TOP + 12.0f};
+    int index_column = 0;
 
     std::vector<std::filesystem::path> topics;
     for (const auto& entry: std::filesystem::directory_iterator(std::filesystem::path("./../dsa/"))) {
@@ -443,6 +506,18 @@ signed main()
         sort(begin(files), end(files), lesser_path);
 
         draw_topic_title(pdf, page, current_topic, y, column);
+
+        draw_index_entry(
+            pdf, front_page,
+            current_topic.substr(3), 0,
+            index_y[index_column],
+            index_column, true
+        );
+        if (index_y[index_column] > BOTTOM - 10.0f) {
+            index_column++;
+            WARNING_ASSERT(index_column < 2);
+        }
+
         y += 7.0f;
 
         for (auto& file: files) {
@@ -460,6 +535,18 @@ signed main()
                     column = 0;
                     y = TOP;
                 }
+            }
+
+            draw_index_entry(
+                pdf, front_page,
+                file.stem().string(),
+                page_number-1,
+                index_y[index_column],
+                index_column, false
+            );
+            if (index_y[index_column] > BOTTOM - 10.0f) {
+                index_column++;
+                WARNING_ASSERT(index_column < 2);
             }
 
             const f32 x = HSPACE + column * (COL_W + COL_GAP);
