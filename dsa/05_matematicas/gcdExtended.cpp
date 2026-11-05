@@ -1,8 +1,3 @@
-#include<bits/stdc++.h>
-
-using namespace std;
-#define ll long long
-
 //Tested
 
 ll gcdExtended(ll a, ll b, ll &x, ll &y){
