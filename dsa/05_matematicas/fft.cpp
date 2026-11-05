@@ -1,12 +1,3 @@
-#include<bits/stdc++.h>
-
-using namespace std;
-
-#define ll long long
-#define for_(i, n) for(ll i = 0; i < n; ++i)
-#define cd complex<long double>
-const double PI = 3.141592653589793238462643383279502884197169399375105;
-
 //Tested
 
 void fft_bottom_up(vector<cd> &c, bool inverse){
