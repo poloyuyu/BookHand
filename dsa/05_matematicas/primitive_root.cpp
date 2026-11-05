@@ -5,7 +5,7 @@
 
 ll generator_(ll n) {
     vector<int> facts;
-    ll phi_n = tot_euler(n)[n], m = phi_n;
+    ll phi_n = tot_euler(n), m = phi_n;
     for(ll i=2; i*i<=m; ++i){
         if(m % i == 0) {
             facts.push_back(i);
