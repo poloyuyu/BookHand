@@ -1,11 +1,7 @@
 // TESTED up to 1e18, run T(n) < 1e8
-
 ll mult(ll a, ll b, ll m) { return (__int128)a * b % m; }
-
 ll f(ll x, ll c, ll m) { return (mult(x, x, m) + c) % m; }
-
-#include"gcd.cpp"
-
+#include "gcd.cpp"
 ll rho(ll n, ll x0 = 2, ll c = 1) {
   ll x = x0;
   ll y = x0;
@@ -18,13 +14,11 @@ ll rho(ll n, ll x0 = 2, ll c = 1) {
   }
   return g;
 }
-
 // algorithm for the factorization
 ll brent(ll n, ll x0 = 2, ll c = 1) {
   ll x = x0;
   ll g = 1;
   ll xs, y;
-
   ll m = 128;
   ll l = 1;
   ll iter = 0;
@@ -50,9 +44,7 @@ ll brent(ll n, ll x0 = 2, ll c = 1) {
   }
   return g;
 }
-
-#include"miller_rabin.cpp"
-
+#include "miller_rabin.cpp"
 // algorithm to prime factorization
 void factorize(ll n, map<ll, ll>& factors) {
   if (n == 1) return;

@@ -318,7 +318,8 @@ void draw_source_box(
     pdf_doc* pdf, pdf_object* page,
     f32 x, f32 y,
     const std::string& filename,
-    const std::vector<std::pair<int, std::string>>& lines
+    const std::vector<std::pair<int, std::string>>& lines,
+    bool is_continuation = false
 )
 {
     y += 1.0f;
@@ -353,6 +354,9 @@ void draw_source_box(
             slice[i] = ' ';
             slice[i+1] = std::toupper(slice[i+1]);
         }
+    }
+    if (is_continuation) {
+        slice += " (cont.)";
     }
 
     const char* font_bold = pdf_set_font_ttf(pdf, FONT_BOLD);
@@ -494,6 +498,17 @@ signed main()
     f32 y = TOP;
     pdf_object* page = NULL;
 
+    auto advance_column = [&]() {
+        if (column == 0) {
+            column = 1;
+            y = TOP;
+        } else {
+            page = new_page();
+            column = 0;
+            y = TOP;
+        }
+    };
+
     for (auto& dir: topics) {
         current_topic = dir.filename().string();
         if (!page) {
@@ -504,6 +519,10 @@ signed main()
             if (entry.is_regular_file() && entry.path().extension() == ".cpp") files.push_back(entry.path());
         }
         sort(begin(files), end(files), lesser_path);
+
+        if (y + 12.0f > BOTTOM) {
+            advance_column();
+        }
 
         draw_topic_title(pdf, page, current_topic, y, column);
 
@@ -523,24 +542,12 @@ signed main()
         for (auto& file: files) {
             f32 code_max_w = COL_W - GUTTER_W - 2.5f;
             auto lines = read_file(pdf, file, code_max_w);
-
-            const f32 box_h = 4.2f + (f32)lines.size() * CODE_LINE_H + 1.5f;
-
-            if (y + box_h > BOTTOM) {
-                if (column == 0) {
-                    column = 1;
-                    y = TOP;
-                } else {
-                    page = new_page();
-                    column = 0;
-                    y = TOP;
-                }
-            }
+            if (lines.empty()) continue;
 
             draw_index_entry(
                 pdf, front_page,
                 file.stem().string(),
-                page_number-1,
+                page_number - 1,
                 index_y[index_column],
                 index_column, false
             );
@@ -549,10 +556,48 @@ signed main()
                 WARNING_ASSERT(index_column < 2);
             }
 
-            const f32 x = HSPACE + column * (COL_W + COL_GAP);
             std::cout << "procesando " << file.filename().string() << endl;
-            draw_source_box(pdf, page, x, y, file.filename().string(), lines);
-            y += box_h + 3.0f;
+
+            size_t line_offset = 0;
+            bool is_continuation = false;
+            const f32 title_h = 4.2f;
+            const f32 padding = 1.5f + 1.0f;
+
+            while (line_offset < lines.size()) {
+                f32 available_h = BOTTOM - y;
+
+                if (available_h < title_h + padding + 2.0f * CODE_LINE_H) {
+                    advance_column();
+                    available_h = BOTTOM - y;
+                }
+
+                f32 h_for_lines = available_h - title_h - padding;
+                size_t can_fit = static_cast<size_t>(std::max(0.0f, h_for_lines / CODE_LINE_H));
+                size_t count = std::min(can_fit, lines.size() - line_offset);
+
+                if (count == 0) {
+                    advance_column();
+                    continue;
+                }
+
+                std::vector<std::pair<int, std::string>> chunk(
+                    lines.begin() + line_offset,
+                    lines.begin() + line_offset + count
+                );
+
+                const f32 x = HSPACE + column * (COL_W + COL_GAP);
+                const f32 chunk_box_h = title_h + (f32)chunk.size() * CODE_LINE_H + 1.5f;
+
+                draw_source_box(pdf, page, x, y, file.filename().string(), chunk, is_continuation);
+
+                y += chunk_box_h + 3.0f;
+                line_offset += count;
+                is_continuation = true;
+
+                if (line_offset < lines.size()) {
+                    advance_column();
+                }
+            }
         }
     }
 
