@@ -1,16 +1,3 @@
-
-#include<bits/stdc++.h>
-
-using namespace std;
-
-#define ll long long
-#define ull unsigned long long
-#define for_(i, n) for(ll i = 0; i < n; ++i)
-#define INF LLONG_MAX
-#define NINF LLONG_MIN
-
-const ll mod = 1e9 + 7; 
-
 //Example cardinality of all subsets of size 1
 ll cardinalitySubset(ll subset){
     return 1;
