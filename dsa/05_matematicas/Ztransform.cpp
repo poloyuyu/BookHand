@@ -1,8 +1,3 @@
-#include <bits/stdc++.h>
-using namespace std;
-#define ll long long
-#define for_(i, n) for(ll i = 0; i < n; ++i)
-
 //TESTED for gcd
 
 //only if it is neccesary, but Z transform work on any module, and without
