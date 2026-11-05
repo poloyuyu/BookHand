@@ -1,10 +1,3 @@
-#include<bits/stdc++.h>
-
-using namespace std;
-
-#define u128 __uint128_t
-#define ll long long
-
 //Tested
 
 ll binpow(ll a, ll b, ll mod){
