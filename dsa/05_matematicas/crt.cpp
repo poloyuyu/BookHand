@@ -1,30 +1,5 @@
-
-#include<bits/stdc++.h>
-
-using namespace std;
-
-#define ll long long
-#define ull unsigned ll
-#define for_(i, n) for(ll i = 0; i < n; ++i)
-#define INF LLONG_MAX
-#define NINF LLONG_MIN
-#define i128 __int128
-
-const ll mod = 1e9 + 7;
-
 //TESTED (PD: for 2x2 system but should work for any nXn)
-
-ll gcdExtended(ll a, ll b, ll &x, ll &y){
-    if(b == 0){
-        x = 1;
-        y = 0;
-        return a;
-    }
-    ll x_, y_, gcd = gcdExtended(b, a%b, x_, y_);
-    x = y_;
-    y = x_ - y_*(a/b);
-    return gcd;
-}
+#include"gcdExtended.cpp"
 
 ll mod_inv(ll a, ll m){
     ll x, y;
