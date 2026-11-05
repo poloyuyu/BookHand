@@ -1,7 +1,3 @@
-#include<bits/stdc++.h>
-using namespace std;
-#define ll long long
-#define for_(i, n) for(ll i = 0; i < n; i++)
 /*
   *Description:* Computes the inmediate dominator of every node in a directed graph in O((|E|+|V|)log(|V|)).
   *Status:* Tested on CSES
@@ -114,7 +110,7 @@ void dfs(ll &cnt, ll node, vector<vector<ll>> &adj, vector<ll> &tin, vector<ll> 
     tout[node] = cnt++;
 }
 
-//verifiy if u dominates v, for each edge
+//verifiy if u dominates v, for each edge, obviusly tle, is to catch de idea, and implement a part of the function
 vector<vector<bool>> Verifiy_u_dom_v(ll n, vector<vector<ll>> &adj, vector<vector<ll>> &rev_adj, vector<pair<ll, ll>> &edges){
     dominator_tree dt(adj, rev_adj);
     vector<vector<ll>> dom_tree(n);
