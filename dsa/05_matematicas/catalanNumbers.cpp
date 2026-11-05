@@ -1,9 +1,3 @@
-#include<bits/stdc++.h>
-
-using namespace std;
-
-#define ll long long
-
 //n-catalan number = (2n)!/((n+1)!n!)
 ll getNCatalanNumber(ll n){
     double ans = 1;
