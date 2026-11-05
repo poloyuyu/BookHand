@@ -1,9 +1,3 @@
-#include<bits/stdc++.h>
-
-using namespace std;
-
-#define ll long long
-
 //Tested
 
 vector<bool> erathostenesSieve(ll n){
