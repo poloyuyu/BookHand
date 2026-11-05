@@ -1,10 +1,3 @@
-#include<bits/stdc++.h>
-
-using namespace std;
-
-#define ll long long
-#define for_(i, n) for(ll i = 0; i < n; ++i)
-
 //TESTED
 
 const ll mod = 998244353, generator = 3, rootn = 3; // for N max = 2^23
@@ -13,16 +6,7 @@ const ll mod = 7340033, generator = 3, rootn = 3; // for N max = 2^20
 const ll mod = 167772161, generator = 3, rootn = 3; // for N max = 2^25
 const ll mod = 469762049, generator = 3, rootn = 3; // for N max = 2^26
 */
-
-ll binpow(ll a, ll e){
-    ll ans = 1;
-    while(e > 0){
-        if(e&1) ans = (ans * a)%mod;
-        a = (a*a)%mod;
-        e>>=1;
-    }
-    return ans;
-}
+#include"bin_pow.cpp"
 
 ll inv(ll a){return binpow(a, mod-2);}
 
