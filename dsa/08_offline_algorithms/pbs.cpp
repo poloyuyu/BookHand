@@ -5,7 +5,7 @@ while(1) {
     for (ll i = 0; i < q; i++) {
         if (r[i] - l[i] <= 1) continue;
         flag = 1;
-        bucket[(l[i]+r[i])>>1] = i;
+        bucket[(l[i]+r[i])>>1].push_back(i);
     }
     if (!flag) break;
     //RESET DATA STRUCTURE
