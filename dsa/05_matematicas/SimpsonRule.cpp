@@ -1,17 +1,3 @@
-
-#include<bits/stdc++.h>
-
-using namespace std;
-
-#define ll long long
-#define ld long double
-#define ull unsigned long long
-#define for_(i, n) for(ll i = 0; i < n; ++i)
-#define INF LLONG_MAX
-#define NINF LLONG_MIN
-
-const ll mod = 1e9 + 7; 
-
 //TESTED
 
 ld f(ld x) {return x;}
