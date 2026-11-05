@@ -1,15 +1,3 @@
-#include<bits/stdc++.h>
-#include"bin_pow.cpp"
-using namespace std;
-
-#define ll long long
-#define ull unsigned long long
-#define INF LLONG_MAX
-#define NINF LLONG_MIN
-
-const double EPS = 1e-18;
-const int MOD = 1e9+7;
-
 //Tested
 
 bool gauss_jordan(vector<vector<ll>> A, vector<ll> &x) {
