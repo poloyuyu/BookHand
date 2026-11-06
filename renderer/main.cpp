@@ -57,7 +57,11 @@ constexpr Color border_color{215, 215, 220};
 // Formulary UI Colors
 constexpr Color form_bg{252, 251, 247};
 constexpr Color form_border{218, 212, 200};
-constexpr Color form_accent{45, 90, 135};
+//constexpr Color form_accent{45, 90, 135};
+//constexpr Color form_accent{191, 163, 69};
+//constexpr Color form_accent{224, 172, 0};
+//constexpr Color form_accent{255, 180, 0};
+constexpr Color form_accent{245, 210, 0};
 constexpr Color form_quote_bg{244, 241, 234};
 
 // Syntax Highlighting Colors
