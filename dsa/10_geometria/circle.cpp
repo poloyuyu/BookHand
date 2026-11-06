@@ -2,7 +2,8 @@
  *Description:* 2D circle, constructors: empty, (center, radius), (a, b, c)
  * circumcircle Status:* Tested
  */
-template <typename T> struct circle {
+template <typename T>
+struct circle {
   point2d<T> c;
   T r;
   circle() : c(), r(0) {}
